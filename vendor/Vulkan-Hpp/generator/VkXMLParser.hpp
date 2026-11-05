@@ -1,0 +1,938 @@
+// SPDX-FileCopyrightText: 2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+#pragma once
+
+#include "XMLHelper.hpp"
+
+#include <map>
+#include <optional>
+#include <regex>
+#include <string>
+#include <tinyxml2.h>
+#include <variant>
+#include <vector>
+
+struct Platform
+{
+  std::string name    = {};
+  std::string comment = {};
+  std::string protect = {};
+  int         xmlLine = {};
+};
+
+struct Platforms
+{
+  std::string           comment   = {};
+  std::vector<Platform> platforms = {};
+  int                   xmlLine   = {};
+};
+
+struct TypeDefine
+{
+  std::string              name               = {};
+  std::vector<std::string> api                = {};
+  std::string              possibleCallee     = {};
+  std::vector<std::string> params             = {};
+  std::string              possibleDefinition = {};
+  std::string              require            = {};
+  std::string              requiredBy         = {};
+  int                      xmlLine            = {};
+};
+
+struct TypeBaseType
+{
+  std::string           name       = {};
+  std::set<std::string> requiredBy = {};
+  Type                  type       = {};
+  int                   xmlLine    = {};
+};
+
+struct TypeBitmask
+{
+  std::string                name       = {};
+  std::string                type       = {};
+  std::vector<std::string>   api        = {};
+  std::string                require    = {};
+  std::set<std::string>      requiredBy = {};
+  std::map<std::string, int> aliases    = {};
+  int                        xmlLine    = {};
+};
+
+struct Alias
+{
+  std::string name       = {};
+  std::string alias      = {};
+  std::string deprecated = {};
+  int         xmlLine    = {};
+};
+
+using BitmaskVariant = std::variant<TypeBitmask, Alias>;
+
+struct TypeHandle
+{
+  std::string                name        = {};
+  std::map<std::string, int> aliases     = {};
+  std::string                objTypeEnum = {};
+  std::string                parent      = {};
+  std::set<std::string>      requiredBy  = {};
+  Type                       type        = {};
+  int                        xmlLine     = {};
+};
+
+using HandleVariant = std::variant<TypeHandle, Alias>;
+
+struct Tag
+{
+  std::string name    = {};
+  std::string author  = {};
+  std::string contact = {};
+  int         xmlLine = {};
+};
+
+struct Tags
+{
+  std::string      comment = {};
+  std::vector<Tag> tags    = {};
+  int              xmlLine = {};
+};
+
+struct EnumValueAlias
+{
+  std::string name       = {};
+  std::string alias      = {};
+  std::string api        = {};
+  std::string deprecated = {};
+  int         xmlLine    = {};
+};
+
+struct EnumValue
+{
+  std::string                 name       = {};
+  std::vector<EnumValueAlias> aliases    = {};
+  std::string                 bitPos     = {};
+  std::string                 comment    = {};
+  std::string                 offset     = {};
+  std::string                 requiredBy = {};
+  std::string                 value      = {};
+  int                         xmlLine    = {};
+};
+
+struct TypeEnum
+{
+  std::string                name       = {};
+  std::map<std::string, int> aliases    = {};
+  std::string                bitwidth   = {};
+  std::string                category   = {};
+  std::set<std::string>      requiredBy = {};
+  std::vector<EnumValue>     values     = {};
+  int                        xmlLine    = {};
+};
+
+using EnumVariant = std::variant<TypeEnum, Alias>;
+
+struct FuncPointerParam
+{
+  std::string name    = {};
+  Type        type    = {};
+  int         xmlLine = {};
+};
+
+struct TypeFuncPointer
+{
+  std::string                   name       = {};
+  std::vector<FuncPointerParam> params     = {};
+  std::string                   require    = {};
+  std::string                   requiredBy = {};
+  Type                          returnType = {};
+  int                           xmlLine    = {};
+};
+
+struct StructMember
+{
+  std::string              name              = {};
+  std::string              alias             = {};
+  std::string              altLen            = {};
+  std::vector<std::string> api               = {};
+  std::vector<std::string> arraySizes        = {};
+  int                      bitCount          = {};
+  std::string              comment           = {};
+  std::string              deprecated        = {};
+  std::string              externSync        = {};
+  std::string              featureLink       = {};
+  std::string              flagsExtend       = {};
+  std::string              flagsExtendMember = {};
+  std::vector<std::string> len               = {};
+  std::vector<std::string> limitType         = {};
+  bool                     noAutoValidity    = {};
+  bool                     objectType        = {};
+  std::vector<bool>        optional          = {};
+  std::string              selector          = {};
+  Type                     type              = {};
+  std::string              values            = {};
+  int                      xmlLine           = {};
+};
+
+struct TypeStruct
+{
+  std::string                name              = {};
+  std::map<std::string, int> aliases           = {};
+  bool                       allowDuplicate    = {};
+  std::string                comment           = {};
+  std::set<std::string>      extendedBy        = {};  // derived from the structExtends member
+  std::vector<std::string>   structExtends     = {};
+  std::vector<StructMember>  members           = {};
+  std::set<std::string>      requiredBy        = {};
+  bool                       requiredLimitType = {};
+  bool                       returnedOnly      = {};
+  int                        xmlLine           = {};
+};
+
+using StructVariant = std::variant<TypeStruct, Alias>;
+
+struct UnionMember
+{
+  std::string              name           = {};
+  std::vector<std::string> arraySizes     = {};
+  std::string              len            = {};
+  bool                     noAutoValidity = {};
+  bool                     optional       = {};
+  std::vector<std::string> selection      = {};
+  Type                     type           = {};
+  int                      xmlLine        = {};
+};
+
+struct TypeUnion
+{
+  std::string                name         = {};
+  std::map<std::string, int> aliases      = {};
+  std::vector<UnionMember>   members      = {};
+  std::set<std::string>      requiredBy   = {};
+  bool                       returnedOnly = {};
+  int                        xmlLine      = {};
+};
+
+using UnionVariant = std::variant<TypeUnion, Alias>;
+
+using TypeVariant =
+  std::variant<TypeBaseType, BitmaskVariant, TypeDefine, EnumVariant, TypeFuncPointer, HandleVariant, TypeInclude, StructVariant, UnionVariant, TypeExternal>;
+
+struct Param
+{
+  std::string              name           = {};
+  std::string              altLen         = {};
+  std::vector<std::string> api            = {};
+  std::vector<std::string> arraySizes     = {};
+  std::string              externSync     = {};
+  std::string              len            = {};
+  bool                     noAutoValidity = {};
+  std::string              objectType     = {};
+  std::vector<bool>        optional       = {};
+  std::string              stride         = {};
+  Type                     type           = {};
+  std::string              validStructs   = {};
+  int                      xmlLine        = {};
+
+  bool operator==( Param const & rhs ) const noexcept
+  {
+    return ( name == rhs.name ) && ( altLen == rhs.altLen ) && ( api == rhs.api ) && ( arraySizes == rhs.arraySizes ) && ( externSync == rhs.externSync ) &&
+           ( len == rhs.len ) && ( noAutoValidity == rhs.noAutoValidity ) && ( objectType == rhs.objectType ) && ( optional == rhs.optional ) &&
+           ( stride == rhs.stride ) && ( type == rhs.type ) && ( validStructs == rhs.validStructs );
+  }
+};
+
+struct Command
+{
+  std::string                name                 = {};
+  std::string                allowNoQueues        = {};
+  std::map<std::string, int> aliases              = {};
+  std::vector<std::string>   api                  = {};
+  std::vector<std::string>   cmdBufferLevel       = {};
+  std::string                conditionalRendering = {};
+  std::vector<std::string>   errorCodes           = {};
+  std::vector<std::string>   exports              = {};
+  std::vector<Param>         params               = {};
+  std::vector<std::string>   queues               = {};
+  std::string                renderPass           = {};
+  std::set<std::string>      requiredBy           = {};
+  Type                       returnType           = {};
+  std::vector<std::string>   successCodes         = {};
+  std::vector<std::string>   tasks                = {};
+  std::string                videoCoding          = {};
+  int                        xmlLine              = {};
+};
+
+using CommandVariant = std::variant<Command, Alias>;
+
+struct Component
+{
+  std::string bits          = {};
+  std::string name          = {};
+  std::string numericFormat = {};
+  std::string planeIndex    = {};
+  int         xmlLine       = {};
+};
+
+struct Constant
+{
+  std::string type    = {};
+  std::string value   = {};
+  int         xmlLine = {};
+};
+
+struct SupersededName
+{
+  std::string name         = {};
+  std::string supersededBy = {};
+  int         xmlLine      = {};
+};
+
+struct FeatureElement
+{
+  std::string name      = {};
+  std::string structure = {};
+  int         xmlLine   = {};
+};
+
+struct Deprecate
+{
+  std::string                 explanationLink = {};
+  std::vector<SupersededName> commands        = {};
+  std::vector<FeatureElement> features        = {};
+  std::vector<SupersededName> types           = {};
+  int                         xmlLine         = {};
+};
+
+struct EnumValues
+{
+  std::string            bitwidth = {};
+  std::string            type     = {};
+  std::vector<EnumValue> values   = {};
+  int                    xmlLine  = {};
+};
+
+struct Enums
+{
+  std::map<std::string, Constant>   constants  = {};
+  std::map<std::string, EnumValues> enumValues = {};
+  int                               xmlLine    = {};
+};
+
+struct BitmaskValueRegular
+{
+  std::string name    = {};
+  std::string bitPos  = {};
+  std::string comment = {};
+  std::string value   = {};
+  int         xmlLine = {};
+};
+
+using BitmaskValueVariant = std::variant<EnumValueAlias, BitmaskValueRegular>;
+
+struct BitmaskValue
+{
+  std::string                 name    = {};
+  std::string                 bitPos  = {};
+  std::string                 comment = {};
+  std::string                 value   = {};
+  std::vector<EnumValueAlias> aliases = {};
+  int                         xmlLine = {};
+};
+
+struct EnumsBitmask
+{
+  std::string               name     = {};
+  std::string               bitWidth = {};
+  std::string               comment  = {};
+  std::vector<BitmaskValue> values   = {};
+  int                       xmlLine  = {};
+};
+
+struct ConstantValue
+{
+  std::string name    = {};
+  std::string comment = {};
+  std::string type    = {};
+  std::string value   = {};
+  int         xmlLine = {};
+};
+
+struct EnumsConstants
+{
+  std::string                name    = {};
+  std::string                comment = {};
+  std::vector<ConstantValue> values  = {};
+  int                        xmlLine = {};
+};
+
+struct EnumValueRegular
+{
+  std::string name    = {};
+  std::string comment = {};
+  std::string value   = {};
+  int         xmlLine = {};
+};
+
+using EnumValueVariant = std::variant<EnumValueAlias, EnumValueRegular>;
+
+struct EnumsEnum
+{
+  std::string            name    = {};
+  std::string            comment = {};
+  std::vector<EnumValue> values  = {};
+  int                    xmlLine = {};
+};
+
+using EnumsVariant = std::variant<EnumsBitmask, EnumsConstants, EnumsEnum>;
+
+struct EnumUnused
+{
+  std::string start   = {};
+  std::string comment = {};
+  int         xmlLine = {};
+};
+
+struct ExtensionRemove
+{
+  FeatureElement feature = {};
+  int            xmlLine = {};
+};
+
+struct ExtensionRequireEnumAlias
+{
+  std::string name       = {};
+  std::string alias      = {};
+  std::string extends    = {};
+  std::string api        = {};
+  std::string comment    = {};
+  std::string deprecated = {};
+  std::string protect    = {};
+  int         xmlLine    = {};
+};
+
+using ExtensionRequireEnumAliasVariant = std::variant<ExtensionRequireEnumAlias, Alias>;
+
+struct ExtensionRequireEnumExtendByBitPos
+{
+  std::string name    = {};
+  std::string extends = {};
+  std::string bitPos  = {};
+  std::string comment = {};
+  std::string protect = {};
+  int         xmlLine = {};
+};
+
+struct ExtensionRequireEnumExtendByOffset
+{
+  std::string name       = {};
+  std::string extends    = {};
+  std::string offset     = {};
+  std::string comment    = {};
+  std::string dir        = {};
+  std::string deprecated = {};
+  std::string extNumber  = {};
+  std::string protect    = {};
+  int         xmlLine    = {};
+};
+
+struct ExtensionRequireEnumExtendByValue
+{
+  std::string name    = {};
+  std::string extends = {};
+  std::string value   = {};
+  std::string comment = {};
+  int         xmlLine = {};
+};
+
+using ExtensionRequireEnumExtendVariant =
+  std::variant<ExtensionRequireEnumExtendByBitPos, ExtensionRequireEnumExtendByOffset, ExtensionRequireEnumExtendByValue>;
+
+struct ExtensionRequireEnumConstant
+{
+  std::string name    = {};
+  std::string value   = {};
+  int         xmlLine = {};
+};
+
+using ExtensionRequireEnumConstantVariant = std::variant<ExtensionRequireEnumConstant, NameElement>;
+
+using ExtensionRequireEnumVariant = std::variant<ExtensionRequireEnumAliasVariant, ExtensionRequireEnumExtendVariant, ExtensionRequireEnumConstantVariant>;
+
+struct MultiFeatureElement
+{
+  std::vector<std::string> names     = {};
+  std::string              structure = {};
+  int                      xmlLine   = {};
+};
+
+struct PropertyElement
+{
+  std::string              name      = {};
+  std::string              structure = {};
+  std::vector<std::string> value     = {};
+  int                      xmlLine   = {};
+};
+
+struct RequireType
+{
+  std::string comment = {};
+  std::string name    = {};
+  int         xmlLine = {};
+};
+
+struct ExtensionRequire
+{
+  std::string                              api        = {};
+  std::vector<NameElement>                 commands   = {};
+  std::string                              comment    = {};
+  std::vector<std::string>                 depends    = {};
+  std::vector<ExtensionRequireEnumVariant> enums      = {};
+  std::vector<MultiFeatureElement>         features   = {};
+  std::vector<PropertyElement>             properties = {};
+  std::vector<RequireType>                 types      = {};
+  int                                      xmlLine    = {};
+};
+
+struct Extension
+{
+  std::string                                               name         = {};
+  std::string                                               author       = {};
+  std::string                                               comment      = {};
+  std::vector<std::string>                                  contacts     = {};
+  std::map<std::string, std::vector<std::set<std::string>>> depends      = {};
+  std::string                                               deprecatedBy = {};
+  std::vector<Deprecate>                                    deprecates   = {};
+  bool                                                      isDeprecated = {};
+  bool                                                      noFeatures   = {};
+  uint32_t                                                  number       = {};
+  std::string                                               obsoletedBy  = {};
+  std::string                                               platform     = {};
+  std::string                                               promotedTo   = {};
+  bool                                                      provisional  = {};
+  std::vector<std::string>                                  ratified     = {};
+  std::vector<ExtensionRemove>                              removes      = {};
+  std::vector<ExtensionRequire>                             require      = {};
+  std::vector<std::string>                                  specialUse   = {};
+  int32_t                                                   sortOrder    = {};
+  std::vector<std::string>                                  supported    = {};
+  std::string                                               type         = {};
+  int                                                       xmlLine      = {};
+};
+
+struct Extensions
+{
+  std::string            comment    = {};
+  std::vector<Extension> extensions = {};
+  int                    xmlLine    = {};
+};
+
+struct ExtendEnumAlias
+{
+  std::string name       = {};
+  std::string alias      = {};
+  std::string extends    = {};
+  std::string api        = {};
+  std::string deprecated = {};
+  int         xmlLine    = {};
+};
+
+using ExtendEnumConstant = NameElement;
+
+struct ExtendEnumRegular
+{
+  std::string name      = {};
+  std::string extends   = {};
+  std::string bitPos    = {};
+  std::string offset    = {};
+  std::string value     = {};
+  std::string comment   = {};
+  std::string dir       = {};
+  std::string extNumber = {};
+  int         xmlLine   = {};
+};
+
+using RequireEnumVariant = std::variant<ExtendEnumAlias, ExtendEnumConstant, ExtendEnumRegular>;
+
+struct Remove
+{
+  std::string                 comment    = {};
+  std::string                 reasonLink = {};
+  std::vector<NameElement>    commands   = {};
+  std::vector<NameElement>    enums      = {};
+  std::vector<FeatureElement> features   = {};
+  std::vector<NameElement>    types      = {};
+  int                         xmlLine    = {};
+};
+
+struct FeatureRequire
+{
+  std::vector<NameElement>        commands      = {};
+  std::string                     comment       = {};
+  std::vector<std::string>        depends       = {};
+  std::vector<ExtendEnumAlias>    enumAliases   = {};
+  std::vector<ExtendEnumConstant> enumConstants = {};
+  std::vector<ExtendEnumRegular>  enumRegulars  = {};
+  std::vector<FeatureElement>     features      = {};
+  std::vector<PropertyElement>    properties    = {};
+  std::vector<RequireType>        types         = {};
+  int                             xmlLine       = {};
+};
+
+struct Feature
+{
+  std::string                 name       = {};
+  std::vector<std::string>    api        = {};
+  std::string                 apiType    = {};
+  std::string                 comment    = {};
+  std::vector<std::string>    depends    = {};
+  std::vector<Deprecate>      deprecates = {};
+  std::string                 number     = {};
+  std::vector<Remove>         removes    = {};
+  std::vector<FeatureRequire> require    = {};
+  int                         xmlLine    = {};
+};
+
+struct MacroVisitor final : tinyxml2::XMLVisitor
+{
+  // comments, then name, then parameters and definition together, because that's how they appear in the xml!
+  // guaranteed to be 3 elements long
+  std::vector<std::string> macro;
+
+  bool Visit( tinyxml2::XMLText const & text ) override
+  {
+    if ( auto const nodeText = text.Value(); nodeText != nullptr )
+    {
+      macro.emplace_back( nodeText );
+    }
+    return true;
+  }
+};
+
+struct SyncAccessEquivalent
+{
+  std::vector<std::string> accesses = {};
+  int                      xmlLine  = {};
+};
+
+struct SyncAccessSupport
+{
+  std::vector<std::string> stages  = {};
+  int                      xmlLine = {};
+};
+
+struct SyncAccess
+{
+  std::string                         alias      = {};
+  Comment                             comment    = {};
+  std::string                         name       = {};
+  std::optional<SyncAccessEquivalent> equivalent = {};
+  std::optional<SyncAccessSupport>    support    = {};
+  int                                 xmlLine    = {};
+};
+
+struct SyncPipelineStage
+{
+  std::string before  = {};
+  std::string name    = {};
+  std::string order   = {};
+  int         xmlLine = {};
+};
+
+struct SyncPipeline
+{
+  std::vector<std::string>       depends = {};
+  std::string                    name    = {};
+  std::vector<SyncPipelineStage> stages  = {};
+  int                            xmlLine = {};
+};
+
+struct SyncStageEquivalent
+{
+  std::vector<std::string> stages  = {};
+  int                      xmlLine = {};
+};
+
+struct SyncStageSupport
+{
+  std::vector<std::string> queues  = {};
+  int                      xmlLine = {};
+};
+
+struct SyncStage
+{
+  std::string                        alias      = {};
+  std::string                        name       = {};
+  std::optional<SyncStageEquivalent> equivalent = {};
+  std::optional<SyncStageSupport>    support    = {};
+  int                                xmlLine    = {};
+};
+
+struct Sync
+{
+  std::string               comment   = {};
+  std::vector<SyncAccess>   accesses  = {};
+  std::vector<SyncPipeline> pipelines = {};
+  std::vector<SyncStage>    stages    = {};
+  int                       xmlLine   = {};
+};
+
+struct Types
+{
+  std::vector<TypeBaseType>    baseTypes    = {};
+  std::vector<TypeBitmask>     bitmasks     = {};
+  std::vector<TypeDefine>      defines      = {};
+  std::vector<TypeEnum>        enums        = {};
+  std::vector<TypeExternal>    externals    = {};
+  std::vector<TypeFuncPointer> funcPointers = {};
+  std::vector<TypeHandle>      handles      = {};
+  std::vector<TypeInclude>     includes     = {};
+  std::vector<TypeStruct>      structs      = {};
+  std::vector<TypeUnion>       unions       = {};
+};
+
+struct VideoCapabilities
+{
+  std::string structure = {};
+  int         xmlLine   = {};
+};
+
+struct VideoFormatProperties
+{
+  std::string structure = {};
+  int         xmlLine   = {};
+};
+
+struct VideoRequireCapabilities
+{
+  std::string member    = {};
+  std::string structure = {};
+  std::string value     = {};
+  int         xmlLine   = {};
+};
+
+struct VideoFormatExtend
+{
+  std::string           extend                = {};
+  VideoFormatProperties videoFormatProperties = {};
+  int                   xmlLine               = {};
+};
+
+struct VideoFormatRegular
+{
+  std::string                             name                     = {};
+  std::string                             usage                    = {};
+  std::optional<VideoRequireCapabilities> videoRequireCapabilities = {};
+  std::optional<VideoFormatProperties>    videoFormatProperties    = {};
+  int                                     xmlLine                  = {};
+};
+
+using VideoFormatVariant = std::variant<VideoFormatExtend, VideoFormatRegular>;
+
+struct VideoProfile
+{
+  std::string name    = {};
+  std::string value   = {};
+  int         xmlLine = {};
+};
+
+struct VideoProfileMember
+{
+  std::string               name          = {};
+  std::vector<VideoProfile> videoProfiles = {};
+  int                       xmlLine       = {};
+};
+
+struct VideoProfiles
+{
+  std::string                     structure           = {};
+  std::vector<VideoProfileMember> videoProfileMembers = {};
+  int                             xmlLine             = {};
+};
+
+struct VideoCodecExtend
+{
+  std::string                     name              = {};
+  std::string                     extend            = {};
+  std::string                     value             = {};
+  std::vector<VideoCapabilities>  videoCapabilities = {};
+  std::vector<VideoFormatVariant> videoFormats      = {};
+  VideoProfiles                   videoProfiles     = {};
+  int                             xmlLine           = {};
+};
+
+struct VideoCodecRegular
+{
+  std::string                     name              = {};
+  std::vector<VideoCapabilities>  videoCapabilities = {};
+  std::vector<VideoFormatVariant> videoFormats      = {};
+  int                             xmlLine           = {};
+};
+
+using VideoCodecVariant = std::variant<VideoCodecExtend, VideoCodecRegular>;
+
+struct Plane
+{
+  std::string compatible    = {};
+  std::string heightDivisor = {};
+  std::string index         = {};
+  std::string planeIndex    = {};
+  std::string widthDivisor  = {};
+  int         xmlLine       = {};
+};
+
+struct Format
+{
+  std::vector<std::string> blockExtent      = {};
+  std::string              blockSize        = {};
+  std::string              chroma           = {};
+  std::string              classAttribute   = {};
+  std::vector<Component>   components       = {};
+  std::string              compressed       = {};
+  std::string              name             = {};
+  std::string              packed           = {};
+  std::vector<Plane>       planes           = {};
+  NameElement              spirvImageFormat = {};
+  std::string              texelsPerBlock   = {};
+  int                      xmlLine          = {};
+};
+
+struct DynamicStateCmd
+{
+  std::string name         = {};
+  std::string pipeline     = {};
+  std::string pipelineOnly = {};
+  int         xmlLine      = {};
+};
+
+struct DynamicStateEnableExtension
+{
+  std::string extension = {};
+  int         xmlLine   = {};
+};
+
+struct DynamicStateEnableStruct
+{
+  std::string feature   = {};
+  std::string require   = {};
+  std::string structure = {};
+  int         xmlLine   = {};
+};
+
+using DynamicStateEnableVariant = std::variant<DynamicStateEnableExtension, DynamicStateEnableStruct>;
+
+struct StateCondition
+{
+  std::string special = {};
+  std::string state   = {};
+  int         xmlLine = {};
+};
+
+struct DynamicState
+{
+  std::string                            name                  = {};
+  std::vector<DynamicStateCmd>           commands              = {};
+  std::vector<DynamicStateEnableVariant> enables               = {};
+  std::vector<std::string>               pipelineSubstates     = {};
+  std::string                            requiresRasterization = {};
+  std::string                            shaderStage           = {};
+  StateCondition                         stateCondition        = {};
+  int                                    xmlLine               = {};
+};
+
+struct SPIRVExtensionEnableByExtension
+{
+  std::string extension = {};
+  int         xmlLine   = {};
+};
+
+struct SPIRVExtensionEnableByVersion
+{
+  std::string version = {};
+  int         xmlLine = {};
+};
+
+using SPIRVExtensionEnableVariant = std::variant<SPIRVExtensionEnableByExtension, SPIRVExtensionEnableByVersion>;
+
+struct SPIRVExtension
+{
+  std::vector<SPIRVExtensionEnableVariant> enables = {};
+  std::string                              name    = {};
+  int                                      xmlLine = {};
+};
+
+struct SPIRVExtensions
+{
+  std::string                 comment    = {};
+  std::vector<SPIRVExtension> extensions = {};
+  int                         xmlLine    = {};
+};
+
+struct SPIRVCapabilityEnableByExtension
+{
+  std::string extension = {};
+  int         xmlLine   = {};
+};
+
+struct SPIRVCapabilityEnableByProperty
+{
+  std::string              member   = {};
+  std::string              property = {};
+  std::vector<std::string> require  = {};
+  std::string              value    = {};
+  int                      xmlLine  = {};
+};
+
+struct SPIRVCapabilityEnableByStruct
+{
+  std::string              alias     = {};
+  std::string              feature   = {};
+  std::vector<std::string> require   = {};
+  std::string              structure = {};
+  int                      xmlLine   = {};
+};
+
+struct SPIRVCapabilityEnableByVersion
+{
+  std::string version = {};
+  int         xmlLine = {};
+};
+
+using SPIRVCapabilityEnableVariant =
+  std::variant<SPIRVCapabilityEnableByExtension, SPIRVCapabilityEnableByProperty, SPIRVCapabilityEnableByStruct, SPIRVCapabilityEnableByVersion>;
+
+struct SPIRVCapability
+{
+  std::vector<SPIRVCapabilityEnableVariant> enables = {};
+  std::string                               name    = {};
+  int                                       xmlLine = {};
+};
+
+struct SPIRVCapabilities
+{
+  std::string                  comment      = {};
+  std::vector<SPIRVCapability> capabilities = {};
+  int                          xmlLine      = {};
+};
+
+struct Vkxml
+{
+  std::vector<Command>           commands          = {};
+  EnumsConstants                 constants         = {};
+  Comment                        copyright         = {};
+  std::vector<DynamicState>      dynamicStates     = {};
+  Extensions                     extensions        = {};
+  std::vector<Feature>           features          = {};
+  std::vector<Format>            formats           = {};
+  Platforms                      platforms         = {};
+  SPIRVCapabilities              spirvCapabilities = {};
+  SPIRVExtensions                spirvExtensions   = {};
+  Sync                           sync              = {};
+  Tags                           tags              = {};
+  Types                          types             = {};
+  std::vector<VideoCodecVariant> videoCodecs       = {};
+};
+
+std::string                         concatenate( std::vector<std::string> const & list );
+std::pair<std::string, std::string> determineEnumSuffixes( std::string const & name, bool bitmask, std::vector<Tag> const & tags );
+std::string                         findTag( std::string const & name, std::vector<Tag> const & tags, std::string const & postfix = "" );
+Vkxml                               parseVkXml( tinyxml2::XMLDocument const & document, std::string const & api );

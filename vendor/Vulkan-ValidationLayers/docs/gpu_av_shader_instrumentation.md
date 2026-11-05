@@ -1,0 +1,196 @@
+# GPU-AV Shader Instrumentation
+
+Shader instrumentation is the process of taking an existing SPIR-V file from the application and injecting additional SPIR-V instructions.
+When we can't statically determine the value that will be used in a shader, GPU-AV adds logic to detect the value and if it catches an invalid instruction, it will not actually execute it.
+
+## Expected behavior during error
+
+When we find an error in the SPIR-V at runtime there are 3 possible behaviour the layer can take
+
+1. Still execute the instruction as normal (chance it will crash/hang everything)
+2. Don't execute the instruction (works well if there is not return value to worry about)
+3. Try and call a "safe default" version of the instruction
+
+For things such as ray tracing, we decided to go with `2` as it would have the least side effects. The main goal is to make sure we get the error message to the user.
+
+## How Descriptor Indexing is instrumented
+
+As an exaxmple, if the incoming shader was
+
+```glsl
+#version 450
+#extension GL_EXT_nonuniform_qualifier : enable
+
+layout(set = 0, binding = 1) uniform sampler2D tex[];
+layout(location = 0) out vec4 uFragColor;
+layout(location = 0) in flat uint index;
+
+void main(){
+   uFragColor = texture(tex[index], vec2(0, 0));
+}
+```
+
+it is first ran through a custom pass (`DescriptorIndexingOOBPass` in `layers/gpuav/spirv/`) to inject logic to call a known function, this will look like after (when using [Safe Mode](#safe-mode))
+
+```glsl
+vec4 value;
+if (inst_descriptor_indexing_oob_bindless(/*...*/)) {
+    value = texture(tex[index], vec2(0.0));
+} else {
+    value = vec4(0.0);
+}
+uFragColor = value;
+```
+
+The next step is to add the `inst_descriptor_indexing_oob_bindless` function into the SPIR-V.
+
+Currently, all these functions are found in `layers/gpuav/shaders/instrumentation`
+
+```glsl
+bool inst_descriptor_indexing_oob_bindless(const uint inst_offset, const uint desc_set, const uint binding,
+                                           const uint desc_index, const uint binding_layout_size, const uint binding_layout_offset) {
+    // logic
+    return no_error_found;
+}
+```
+
+which is compiled with `glslang`'s `--no-link` option. This is done offline and the module is found in the generated directory (`layers/vulkan/generated/gpuav_offline_spirv_glsl.cpp`).
+
+> Note: This uses `Linkage` which is not technically valid Vulkan Shader `SPIR-V`, while debugging the output of the SPIR-V passes, some tools might complain
+
+Now with the two modules, at runtime `GPU-AV` will call into `gpuav::spirv::Module::LinkFunctions` which will match up the function arguments and create the final shader which looks like
+
+```glsl
+#version 460
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_nonuniform_qualifier : require
+
+layout(set = 0, binding = 1) uniform sampler2D tex[];
+
+layout(location = 0) out vec4 uFragColor;
+layout(location = 0) flat in uint index;
+
+bool inst_descriptor_indexing_oob_bindless(uint inst_offset, uint desc_set, uint binding,
+                                           uint desc_index, uint binding_layout_size, uint binding_layout_offset) {
+    // logic
+    return no_error_found;
+}
+
+void main()
+{
+    vec4 value;
+    // (instruction offset, set, binding, index, binding size, binding offset)
+    if (inst_descriptor_indexing_oob_bindless(42, 0, 1, index, 8, 0)) {
+        value = texture(tex[index], vec2(0.0));
+    } else {
+        value = vec4(0.0);
+    }
+    uFragColor = value;
+}
+```
+
+## How runtime spirv-val for single instructions is instrumented
+
+There are a set of `VUID-RuntimeSpirv` VUs that could be validated in `spirv-val` statically **if** it was using `OpConstant`.
+
+Since it is likely these are variables decided at runtime, we will need to check in GPU-AV.
+
+Luckily because these are usually bound to a single instruction, it is a lighter check
+
+### Example - OpRayQueryInitializeKHR
+
+An example of a VU we need to validate at GPU-AV time
+
+> For OpRayQueryInitializeKHR instructions, the RayTmin operand must be less than or equal to the RayTmax operand
+
+the instruction operands look like
+
+```swift
+OpRayQueryInitializeKHR %ray_query %as %flags %cull_mask %ray_origin %ray_tmin %ray_dir %ray_tmax
+```
+
+This is done in the `TraceRayPass` (`layers/gpuav/spirv/trace_ray_pass.cpp`), which wraps every call of this instruction to look like
+
+```glsl
+if (inst_ray_query_comp(/* copy of arguments */)) {
+    rayQueryInitializeEXT(/* original arguments */)
+}
+```
+
+From here, we use the same `gpuav::spirv::Module::LinkFunctions` flow to add the logic (found in `trace_ray.comp`) and link in where needed
+
+The SPIR-V before and after adding the conditional check looks like
+
+```swift
+// before
+// traceRayEXT(a, b, c)
+%L1 = OpLabel
+%value = OpLoad %x
+OpRayQueryInitializeKHR %value %param
+OpReturn
+
+
+// after
+// if (IsValid(a, b, c)) {
+//   traceRayEXT(a, b, c)
+// }
+
+%L1 = OpLabel
+%value = OpLoad %x // for simplicity, can stay hoisted out
+%compare = OpSomeCompareInstruction
+OpSelectionMerge %L3 None
+OpBranchConditional %compare %L2 %L3
+
+    %L2 = OpLabel
+    OpRayQueryInitializeKHR %value %param
+    OpBranch %L3
+
+%L3 = OpLabel
+OpReturn
+```
+
+## Safe Mode
+
+The `Safe Mode` setting (`gpuav_safe_mode`) is **off** by default, which was designed as a way to improve performance. Every time we instrument a shader, if the driver doesn't support the SPIR-V `DontInline` (which there is no way to test), it gets exponentially slower to compile.
+
+To illustrate the idea, take the simple shader
+
+```glsl
+layout (set = 0, binding = 0) uniform sampler2D imageArray[];
+
+sample(imageArray[8], a);  // access 1
+sample(imageArray[8], b);  // access 2
+sample(imageArray[8], c);  // access 3
+```
+
+With `Safe Mode` on, we check all 3 access for being valid and safely wrap it in a `if` statement so the application will not crash. With `Safe Mode` off (the default) we will only check the first access to `imageArray[8]` (within a block) and not wrap it in an `if` statement, it will save the exponential cost of compiling to check the rest.
+
+The goal with `Safe Mode` being off by default is to help people get going with GPU-AV by making it faster, If they are still finding a crash, it hopefully can be isolated so they can then turn on `Safe Mode` to do the full validation without crashing. A future extension will hopefully provide another mechanism to stop the shader upon the first invalid access.
+
+## Instrumentation Status
+
+In Vulkan 1.0, when you have two descriptors in your shader like:
+
+```glsl
+layout(set = 3, binding = 0) buffer {} a;
+layout(set = 2, binding = 1) sampler b;
+```
+
+what really happens is that the compiler needs to load these descriptors from memory; it must provide a "mapping interface" so the driver knows where to put the descriptors later at draw time.
+
+GPU-AV has evolved such that we need to do a similar thing!
+
+With most workflows, there are three points in time we care about:
+
+1. At shader instrumentation (pipeline creation)
+2. At draw time (when everything is bound and ready to go)
+3. During error message (post queue submit)
+
+The goal is to pass data through these stages. The easiest but most expensive approach is to simply have the data logged in the error message on the GPU. There is a lot of data known on the CPU (from state tracking) that we want to move across the timeline, so we use an `Instrumentation Status` object to map it.
+
+Each pass will output information during shader instrumentation to the `Instrumentation Status` object.
+
+The `Instrumentation Status` is broken into 2 parts
+
+1. `Host` - things that will be needed at draw time on the CPU
+2. `Device` - things that will be used in the error message and will use the `unique_shader_id` key to get the data

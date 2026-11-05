@@ -1,0 +1,79 @@
+// SPDX-FileCopyrightText: 2020-2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+// VulkanHpp Tests : DesignatedInitializers
+//                   Compile test on using designated initializers
+
+
+#ifdef VULKAN_HPP_USE_CXX_MODULE
+#  include <cstdint>
+import std;
+import vulkan;
+#else
+#  include <cstdint>
+#  include <iostream>
+#  include <vector>
+#  include <vulkan/vulkan.hpp>
+#endif
+
+#if defined( __clang__ ) || defined( __GNUC__ )
+#  pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
+class MyVulkanTest
+{
+public:
+  MyVulkanTest();
+
+private:
+  vk::ApplicationInfo applicationInfo;
+};
+
+MyVulkanTest::MyVulkanTest()
+  : applicationInfo{ .pApplicationName   = "My Application",
+                     .applicationVersion = vk::makeApiVersion( 0, 0, 1, 0 ),
+                     .pEngineName        = "My Engine",
+                     .engineVersion      = vk::makeApiVersion( 0, 0, 1, 0 ),
+                     .apiVersion         = vk::ApiVersion10 }
+{
+  this->applicationInfo = vk::ApplicationInfo{ .pApplicationName   = "My Application",
+                                               .applicationVersion = vk::makeApiVersion( 0, 0, 1, 0 ),
+                                               .pEngineName        = "My Engine",
+                                               .engineVersion      = vk::makeApiVersion( 0, 0, 1, 0 ),
+                                               .apiVersion         = vk::ApiVersion10 };
+}
+
+int main()
+{
+  char const * appName       = "DesignatedInitializers";
+  uint32_t     appVersion    = 1;
+  char const * engineName    = "Vulkan.hpp";
+  uint32_t     engineVersion = 1;
+
+  // default initialization is available in any case
+  vk::ApplicationInfo ai0;
+
+  // aggregate initialization: need to explicitly specify sType and pNext, as well as all the other members !
+  vk::ApplicationInfo ai1{ vk::StructureType::eApplicationInfo, nullptr, appName, appVersion, engineName, engineVersion, vk::ApiVersion12 };
+
+  // it's allowed, but not recommended to explicitly specify sType
+  vk::ApplicationInfo ai2 = { .sType = vk::StructureType::eApplicationInfo };
+
+  // any number of the members can be specified; the order has to be respected
+  vk::ApplicationInfo ai3 = { .pApplicationName = appName };
+  vk::ApplicationInfo ai4 = { .applicationVersion = 1, .engineVersion = 2 };
+
+  vk::ApplicationInfo ai5{ .pEngineName = engineName };
+  vk::ApplicationInfo ai6{ .pApplicationName = appName, .apiVersion = vk::ApiVersion12 };
+
+  std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+  std::vector<char const *>              extensions;
+  vk::DeviceCreateInfo                   info_device{
+                      .queueCreateInfoCount    = static_cast<uint32_t>(queueCreateInfos.size()),
+                      .pQueueCreateInfos       = queueCreateInfos.data(),
+                      .enabledExtensionCount   = static_cast<uint32_t>(extensions.size()),
+                      .ppEnabledExtensionNames = extensions.data(),
+  };
+
+  return 0;
+}

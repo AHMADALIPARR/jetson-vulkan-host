@@ -1,0 +1,1552 @@
+// SPDX-FileCopyrightText: 2018-2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+// VulkanHpp Tests : FunctionCallsRAII
+//                   Compile test on using function calls to catch API changes
+
+#if defined( _MSC_VER )
+#  pragma warning( disable : 4189 )  // local variable is initialized but not referenced
+#endif
+#if defined( __clang__ )
+#  pragma clang diagnostic ignored "-Wunused-variable"
+#elif defined( __GNUC__ )
+#  pragma GCC diagnostic ignored "-Wunused-variable"
+#  pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#else
+// unknown compiler... just ignore the warnings for yourselves ;)
+#endif
+
+#ifdef VULKAN_HPP_USE_CXX_MODULE
+#  include <cstdint>
+import std;
+import vulkan;
+#else
+#  include <vulkan/vulkan_raii.hpp>
+#endif
+
+int main()
+{
+  //======================================
+  // Vulkan base API interface definitions
+  //======================================
+
+  // Device initialization
+  {
+    vk::raii::Context      context;
+    vk::InstanceCreateInfo instanceCreateInfo;
+    vk::raii::Instance     instance = context.createInstance( instanceCreateInfo );
+  }
+  {
+    vk::raii::Context      context;
+    vk::InstanceCreateInfo instanceCreateInfo;
+    vk::raii::Instance     instance( context, instanceCreateInfo );
+  }
+
+  {
+    vk::raii::Instance                    instance        = nullptr;
+    std::vector<vk::raii::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+  }
+  {
+    vk::raii::Instance        instance = nullptr;
+    vk::raii::PhysicalDevices physicalDevices( instance );
+  }
+
+  {
+    vk::raii::PhysicalDevice   physicalDevice         = nullptr;
+    vk::PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.getFeatures();
+  }
+
+  {
+    vk::raii::PhysicalDevice physicalDevice   = nullptr;
+    vk::Format               format           = {};
+    vk::FormatProperties     formatProperties = physicalDevice.getFormatProperties( format );
+  }
+
+  {
+    vk::raii::PhysicalDevice  physicalDevice = nullptr;
+    vk::Format                format         = {};
+    vk::ImageType             imageType      = {};
+    vk::ImageTiling           imageTiling    = {};
+    vk::ImageUsageFlags       imageUsageFlags;
+    vk::ImageCreateFlags      imageCreateFlags;
+    vk::ImageFormatProperties imageFormatProperties =
+      physicalDevice.getImageFormatProperties( format, imageType, imageTiling, imageUsageFlags, imageCreateFlags );
+  }
+
+  {
+    vk::raii::PhysicalDevice     physicalDevice           = nullptr;
+    vk::PhysicalDeviceProperties physicalDeviceProperties = physicalDevice.getProperties();
+  }
+
+  {
+    vk::raii::PhysicalDevice               physicalDevice        = nullptr;
+    std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+  }
+
+  {
+    vk::raii::PhysicalDevice           physicalDevice   = nullptr;
+    vk::PhysicalDeviceMemoryProperties memoryProperties = physicalDevice.getMemoryProperties();
+  }
+
+  {
+    vk::raii::Instance   instance     = nullptr;
+    vk::PFN_VoidFunction voidFunction = instance.getProcAddr( "vkCreateInstance" );
+  }
+
+  {
+    vk::raii::Device     device       = nullptr;
+    vk::PFN_VoidFunction voidFunction = device.getProcAddr( "vkCreateInstance" );
+  }
+
+  // Device commands
+  {
+    vk::raii::PhysicalDevice physicalDevice = nullptr;
+    vk::DeviceCreateInfo     deviceCreateInfo;
+    vk::raii::Device         device = physicalDevice.createDevice( deviceCreateInfo );
+  }
+  {
+    vk::raii::PhysicalDevice physicalDevice = nullptr;
+    vk::DeviceCreateInfo     deviceCreateInfo;
+    vk::raii::Device         device( physicalDevice, deviceCreateInfo );
+  }
+
+  // Extension discovery commands
+  {
+    vk::raii::Context                    context;
+    std::vector<vk::ExtensionProperties> properties = context.enumerateInstanceExtensionProperties( nullptr );
+  }
+
+  {
+    vk::raii::PhysicalDevice             physicalDevice = nullptr;
+    std::vector<vk::ExtensionProperties> properties     = physicalDevice.enumerateDeviceExtensionProperties( nullptr );
+  }
+
+  // Layer discovery commands
+  {
+    vk::raii::Context                context;
+    std::vector<vk::LayerProperties> properties = context.enumerateInstanceLayerProperties();
+  }
+
+  {
+    vk::raii::PhysicalDevice         physicalDevice = nullptr;
+    std::vector<vk::LayerProperties> properties     = physicalDevice.enumerateDeviceLayerProperties();
+  }
+
+  // Queue commands
+  {
+    vk::raii::Device device           = nullptr;
+    uint32_t         queueFamilyIndex = 0;
+    uint32_t         queueIndex       = 0;
+    vk::raii::Queue  queue            = device.getQueue( queueFamilyIndex, queueIndex );
+  }
+  {
+    vk::raii::Device device           = nullptr;
+    uint32_t         queueFamilyIndex = 0;
+    uint32_t         queueIndex       = 0;
+    vk::raii::Queue  queue( device, queueFamilyIndex, queueIndex );
+  }
+
+  {
+    vk::raii::Queue queue = nullptr;
+    vk::SubmitInfo  submitInfo;
+    vk::raii::Fence fence = nullptr;
+    queue.submit( submitInfo, fence );
+  }
+
+  {
+    vk::raii::Queue queue = nullptr;
+    queue.waitIdle();
+  }
+
+  {
+    vk::raii::Device device = nullptr;
+    device.waitIdle();
+  }
+
+  // Memory commands
+  {
+    vk::raii::Device       device = nullptr;
+    vk::MemoryAllocateInfo memoryAllocateInfo;
+    vk::raii::DeviceMemory deviceMemory = device.allocateMemory( memoryAllocateInfo );
+  }
+  {
+    vk::raii::Device       device = nullptr;
+    vk::MemoryAllocateInfo memoryAllocateInfo;
+    vk::raii::DeviceMemory deviceMemory( device, memoryAllocateInfo );
+  }
+
+  {
+    vk::raii::DeviceMemory deviceMemory   = nullptr;
+    vk::DeviceSize         offset         = 0;
+    vk::DeviceSize         size           = vk::WholeSize;
+    vk::MemoryMapFlags     memoryMapFlags = {};
+    void *                 pData          = deviceMemory.mapMemory( offset, size, memoryMapFlags );
+  }
+
+  {
+    vk::raii::DeviceMemory deviceMemory = nullptr;
+    deviceMemory.unmapMemory();
+  }
+
+  {
+    vk::raii::Device                   device = nullptr;
+    std::vector<vk::MappedMemoryRange> mappedMemoryRanges;
+    device.flushMappedMemoryRanges( mappedMemoryRanges );
+  }
+
+  {
+    vk::raii::Device                   device = nullptr;
+    std::vector<vk::MappedMemoryRange> mappedMemoryRanges;
+    device.invalidateMappedMemoryRanges( mappedMemoryRanges );
+  }
+
+  {
+    vk::raii::DeviceMemory deviceMemory = nullptr;
+    vk::DeviceSize         size         = deviceMemory.getCommitment();
+  }
+
+  // Memory management API commands
+  {
+    vk::raii::Buffer       buffer       = nullptr;
+    vk::raii::DeviceMemory deviceMemory = nullptr;
+    vk::DeviceSize         memoryOffset = 0;
+    buffer.bindMemory( deviceMemory, memoryOffset );
+  }
+
+  {
+    vk::raii::Image        image        = nullptr;
+    vk::raii::DeviceMemory deviceMemory = nullptr;
+    vk::DeviceSize         memoryOffset = 0;
+    image.bindMemory( deviceMemory, memoryOffset );
+  }
+
+  {
+    vk::raii::Buffer       buffer             = nullptr;
+    vk::MemoryRequirements memoryRequirements = buffer.getMemoryRequirements();
+  }
+
+  {
+    vk::raii::Image        image              = nullptr;
+    vk::MemoryRequirements memoryRequirements = image.getMemoryRequirements();
+  }
+
+  // Sparse resource memory management API commands (optional)
+  {
+    vk::raii::Image                                image                         = nullptr;
+    std::vector<vk::SparseImageMemoryRequirements> sparseImageMemoryRequirements = image.getSparseMemoryRequirements();
+  }
+
+  {
+    vk::raii::PhysicalDevice                     physicalDevice = nullptr;
+    vk::Format                                   format         = {};
+    vk::ImageType                                type           = {};
+    vk::SampleCountFlagBits                      samples        = {};
+    vk::ImageUsageFlags                          usage          = {};
+    vk::ImageTiling                              tiling         = {};
+    std::vector<vk::SparseImageFormatProperties> sparseImageFormatProperties =
+      physicalDevice.getSparseImageFormatProperties( format, type, samples, usage, tiling );
+  }
+
+  {
+    vk::raii::Queue    queue = nullptr;
+    vk::BindSparseInfo bindSparseInfo;
+    vk::Fence          fence;
+    queue.bindSparse( bindSparseInfo, fence );
+  }
+
+  // Fence commands
+  {
+    vk::raii::Device    device = nullptr;
+    vk::FenceCreateInfo fenceCreateInfo;
+    vk::raii::Fence     fence = device.createFence( fenceCreateInfo );
+  }
+  {
+    vk::raii::Device    device = nullptr;
+    vk::FenceCreateInfo fenceCreateInfo;
+    vk::raii::Fence     fence( device, fenceCreateInfo );
+  }
+
+  {
+    vk::raii::Device       device = nullptr;
+    std::vector<vk::Fence> fences;
+    device.resetFences( fences );
+  }
+
+  {
+    vk::raii::Fence fence  = nullptr;
+    vk::Result      result = fence.getStatus();
+  }
+
+  {
+    vk::raii::Device       device = nullptr;
+    std::vector<vk::Fence> fences;
+    vk::Bool32             waitAll = vk::True;
+    uint64_t               timeout = 1000000000;
+    vk::Result             result  = device.waitForFences( fences, waitAll, timeout );
+  }
+
+  // Queue semaphore commands
+  {
+    vk::raii::Device        device = nullptr;
+    vk::SemaphoreCreateInfo semaphoreCreateInfo;
+    vk::raii::Semaphore     semaphore = device.createSemaphore( semaphoreCreateInfo );
+  }
+  {
+    vk::raii::Device        device = nullptr;
+    vk::SemaphoreCreateInfo semaphoreCreateInfo;
+    vk::raii::Semaphore     semaphore( device, semaphoreCreateInfo );
+  }
+
+  // Query commands
+  {
+    vk::raii::Device        device = nullptr;
+    vk::QueryPoolCreateInfo queryPoolCreateInfo;
+    vk::raii::QueryPool     queryPool = device.createQueryPool( queryPoolCreateInfo );
+  }
+  {
+    vk::raii::Device        device = nullptr;
+    vk::QueryPoolCreateInfo queryPoolCreateInfo;
+    vk::raii::QueryPool     queryPool( device, queryPoolCreateInfo );
+  }
+
+  {
+    vk::raii::QueryPool                    queryPool   = nullptr;
+    uint32_t                               firstQuery  = 0;
+    uint32_t                               queryCount  = 1;
+    std::size_t                            dataSize    = sizeof( uint32_t );
+    vk::DeviceSize                         stride      = sizeof( uint32_t );
+    vk::QueryResultFlagBits                flags       = {};
+    vk::ResultValue<std::vector<uint32_t>> resultValue = queryPool.getResults<uint32_t>( firstQuery, queryCount, dataSize, stride, flags );
+  }
+  {
+    vk::raii::QueryPool       queryPool   = nullptr;
+    uint32_t                  firstQuery  = 0;
+    uint32_t                  queryCount  = 1;
+    vk::DeviceSize            stride      = sizeof( uint32_t );
+    vk::QueryResultFlagBits   flags       = {};
+    vk::ResultValue<uint32_t> resultValue = queryPool.getResult<uint32_t>( firstQuery, queryCount, stride, flags );
+  }
+
+  // Buffer commands
+  {
+    vk::raii::Device     device = nullptr;
+    vk::BufferCreateInfo bufferCreateInfo;
+    vk::raii::Buffer     buffer = device.createBuffer( bufferCreateInfo );
+  }
+  {
+    vk::raii::Device     device = nullptr;
+    vk::BufferCreateInfo bufferCreateInfo;
+    vk::raii::Buffer     buffer( device, bufferCreateInfo );
+  }
+
+  // Image commands
+  {
+    vk::raii::Device    device = nullptr;
+    vk::ImageCreateInfo imageCreateInfo;
+    vk::raii::Image     image = device.createImage( imageCreateInfo );
+  }
+  {
+    vk::raii::Device    device = nullptr;
+    vk::ImageCreateInfo imageCreateInfo;
+    vk::raii::Image     image( device, imageCreateInfo );
+  }
+
+  {
+    vk::raii::Image       image = nullptr;
+    vk::ImageSubresource  imageSubresource;
+    vk::SubresourceLayout subresourceLayout = image.getSubresourceLayout( imageSubresource );
+  }
+
+  // Image view commands
+  {
+    vk::raii::Device        device = nullptr;
+    vk::ImageViewCreateInfo imageViewCreateInfo;
+    vk::raii::ImageView     imageView = device.createImageView( imageViewCreateInfo );
+  }
+  {
+    vk::raii::Device        device = nullptr;
+    vk::ImageViewCreateInfo imageViewCreateInfo;
+    vk::raii::ImageView     imageView( device, imageViewCreateInfo );
+  }
+
+  // Command pool commands
+  {
+    vk::raii::Device          device = nullptr;
+    vk::CommandPoolCreateInfo commandPoolCreateInfo;
+    vk::raii::CommandPool     commandPool = device.createCommandPool( commandPoolCreateInfo );
+  }
+  {
+    vk::raii::Device          device = nullptr;
+    vk::CommandPoolCreateInfo commandPoolCreateInfo;
+    vk::raii::CommandPool     commandPool( device, commandPoolCreateInfo );
+  }
+
+  {
+    vk::raii::CommandPool     commandPool = nullptr;
+    vk::CommandPoolResetFlags flags       = {};
+    commandPool.reset( flags );
+  }
+
+  // Command buffer commands
+  {
+    vk::raii::Device                     device = nullptr;
+    vk::CommandBufferAllocateInfo        commandBufferAllocateInfo;
+    std::vector<vk::raii::CommandBuffer> commandBuffers = device.allocateCommandBuffers( commandBufferAllocateInfo );
+  }
+  {
+    vk::raii::Device              device = nullptr;
+    vk::CommandBufferAllocateInfo commandBufferAllocateInfo;
+    vk::raii::CommandBuffers      commandBuffers( device, commandBufferAllocateInfo );
+  }
+
+  {
+    vk::raii::CommandBuffer    commandBuffer = nullptr;
+    vk::CommandBufferBeginInfo beginInfo;
+    commandBuffer.begin( beginInfo );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    commandBuffer.end();
+  }
+
+  {
+    vk::raii::CommandBuffer     commandBuffer = nullptr;
+    vk::CommandBufferResetFlags flags         = {};
+    commandBuffer.reset( flags );
+  }
+
+  // Command buffer building commands
+  {
+    vk::raii::CommandBuffer     commandBuffer = nullptr;
+    vk::raii::Buffer            srcBuffer     = nullptr;
+    vk::raii::Buffer            dstBuffer     = nullptr;
+    std::vector<vk::BufferCopy> copyRegions;
+    commandBuffer.copyBuffer( srcBuffer, dstBuffer, copyRegions );
+  }
+
+  {
+    vk::raii::CommandBuffer    commandBuffer  = nullptr;
+    vk::raii::Image            srcImage       = nullptr;
+    vk::ImageLayout            srcImageLayout = {};
+    vk::raii::Image            dstImage       = nullptr;
+    vk::ImageLayout            dstImageLayout = {};
+    std::vector<vk::ImageCopy> copyRegions;
+    commandBuffer.copyImage( srcImage, srcImageLayout, dstImage, dstImageLayout, copyRegions );
+  }
+
+  {
+    vk::raii::CommandBuffer          commandBuffer = nullptr;
+    vk::raii::Buffer                 buffer        = nullptr;
+    vk::raii::Image                  image         = nullptr;
+    vk::ImageLayout                  imageLayout   = {};
+    std::vector<vk::BufferImageCopy> regions;
+    commandBuffer.copyBufferToImage( buffer, image, imageLayout, regions );
+  }
+
+  {
+    vk::raii::CommandBuffer          commandBuffer = nullptr;
+    vk::raii::Image                  image         = nullptr;
+    vk::ImageLayout                  imageLayout   = {};
+    vk::raii::Buffer                 buffer        = nullptr;
+    std::vector<vk::BufferImageCopy> regions;
+    commandBuffer.copyImageToBuffer( image, imageLayout, buffer, regions );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Buffer        dstBuffer     = nullptr;
+    vk::DeviceSize          dstOffset     = 0;
+    std::vector<uint8_t>    data( 1024 );
+    commandBuffer.updateBuffer<uint8_t>( dstBuffer, dstOffset, data );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Buffer        buffer        = nullptr;
+    vk::DeviceSize          offset        = 0;
+    vk::DeviceSize          size          = vk::WholeSize;
+    commandBuffer.fillBuffer( buffer, offset, size, 0 );
+  }
+
+  {
+    vk::raii::CommandBuffer              commandBuffer   = nullptr;
+    vk::PipelineStageFlagBits            srcStageMask    = {};
+    vk::PipelineStageFlagBits            dstStageMask    = {};
+    vk::DependencyFlags                  dependencyFlags = {};
+    std::vector<vk::MemoryBarrier>       memoryBarriers;
+    std::vector<vk::BufferMemoryBarrier> bufferMemoryBarriers;
+    std::vector<vk::ImageMemoryBarrier>  imageMemoryBarriers;
+    commandBuffer.pipelineBarrier( srcStageMask, dstStageMask, dependencyFlags, memoryBarriers, bufferMemoryBarriers, imageMemoryBarriers );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::QueryPool     queryPool     = nullptr;
+    uint32_t                query         = 0;
+    vk::QueryControlFlags   flags         = {};
+    commandBuffer.beginQuery( queryPool, query, flags );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::QueryPool     queryPool     = nullptr;
+    uint32_t                query         = 0;
+    commandBuffer.endQuery( queryPool, query );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::QueryPool     queryPool     = nullptr;
+    uint32_t                firstQuery    = 0;
+    uint32_t                queryCount    = 1;
+    commandBuffer.resetQueryPool( queryPool, firstQuery, queryCount );
+  }
+
+  {
+    vk::raii::CommandBuffer   commandBuffer = nullptr;
+    vk::PipelineStageFlagBits stage         = {};
+    vk::raii::QueryPool       queryPool     = nullptr;
+    uint32_t                  query         = 0;
+    commandBuffer.writeTimestamp( stage, queryPool, query );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::QueryPool     queryPool     = nullptr;
+    uint32_t                firstQuery    = 0;
+    uint32_t                queryCount    = 1;
+    vk::raii::Buffer        dstBuffer     = nullptr;
+    vk::DeviceSize          dstOffset     = 0;
+    vk::DeviceSize          stride        = 0;
+    vk::QueryResultFlags    flags         = {};
+    commandBuffer.copyQueryPoolResults( queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags );
+  }
+
+  {
+    vk::raii::CommandBuffer        commandBuffer = nullptr;
+    std::vector<vk::CommandBuffer> secondaryCommandBuffers;
+    commandBuffer.executeCommands( secondaryCommandBuffers );
+  }
+
+  //=========================================
+  // Vulkan compute API interface definitions
+  //=========================================
+
+  // Event commands
+  {
+    vk::raii::Device    device = nullptr;
+    vk::EventCreateInfo eventCreateInfo;
+    vk::raii::Event     event = device.createEvent( eventCreateInfo );
+  }
+  {
+    vk::raii::Device    device = nullptr;
+    vk::EventCreateInfo eventCreateInfo;
+    vk::raii::Event     event( device, eventCreateInfo );
+  }
+
+  {
+    vk::raii::Event event  = nullptr;
+    vk::Result      result = event.getStatus();
+  }
+
+  {
+    vk::raii::Event event = nullptr;
+    event.set();
+  }
+
+  {
+    vk::raii::Event event = nullptr;
+    event.reset();
+  }
+
+  // Buffer view commands
+  {
+    vk::raii::Device         device = nullptr;
+    vk::BufferViewCreateInfo bufferViewCreateInfo;
+    vk::raii::BufferView     bufferView = device.createBufferView( bufferViewCreateInfo );
+  }
+  {
+    vk::raii::Device         device = nullptr;
+    vk::BufferViewCreateInfo bufferViewCreateInfo;
+    vk::raii::BufferView     bufferView( device, bufferViewCreateInfo );
+  }
+
+  // Shader commands
+  {
+    vk::raii::Device           device = nullptr;
+    vk::ShaderModuleCreateInfo shaderModuleCreateInfo;
+    vk::raii::ShaderModule     shaderModule = device.createShaderModule( shaderModuleCreateInfo );
+  }
+  {
+    vk::raii::Device           device = nullptr;
+    vk::ShaderModuleCreateInfo shaderModuleCreateInfo;
+    vk::raii::ShaderModule     shaderModule( device, shaderModuleCreateInfo );
+  }
+
+  // Pipeline Cache commands
+  {
+    vk::raii::Device            device = nullptr;
+    vk::PipelineCacheCreateInfo pipelineCacheCreateInfo;
+    vk::raii::PipelineCache     pipelineCache = device.createPipelineCache( pipelineCacheCreateInfo );
+  }
+  {
+    vk::raii::Device            device = nullptr;
+    vk::PipelineCacheCreateInfo pipelineCacheCreateInfo;
+    vk::raii::PipelineCache     pipelineCache( device, pipelineCacheCreateInfo );
+  }
+
+  {
+    vk::raii::PipelineCache pipelineCache = nullptr;
+    std::vector<uint8_t>    data          = pipelineCache.getData();
+  }
+
+  {
+    vk::raii::PipelineCache        dstCache = nullptr;
+    std::vector<vk::PipelineCache> srcCaches;
+    dstCache.merge( srcCaches );
+  }
+
+  // Compute pipeline commands
+  {
+    vk::raii::Device                           device        = nullptr;
+    vk::raii::PipelineCache                    pipelineCache = nullptr;
+    std::vector<vk::ComputePipelineCreateInfo> computePipelineCreateInfos;
+    std::vector<vk::raii::Pipeline>            pipelines = device.createComputePipelines( pipelineCache, computePipelineCreateInfos );
+  }
+  {
+    vk::raii::Device                           device        = nullptr;
+    vk::raii::PipelineCache                    pipelineCache = nullptr;
+    std::vector<vk::ComputePipelineCreateInfo> computePipelineCreateInfos;
+    vk::raii::Pipelines                        pipelines( device, pipelineCache, computePipelineCreateInfos );
+  }
+  {
+    vk::raii::Device              device        = nullptr;
+    vk::raii::PipelineCache       pipelineCache = nullptr;
+    vk::ComputePipelineCreateInfo computePipelineCreateInfo;
+    vk::raii::Pipeline            pipeline = device.createComputePipeline( pipelineCache, computePipelineCreateInfo );
+  }
+  {
+    vk::raii::Device              device        = nullptr;
+    vk::raii::PipelineCache       pipelineCache = nullptr;
+    vk::ComputePipelineCreateInfo computePipelineCreateInfo;
+    vk::raii::Pipeline            pipeline( device, pipelineCache, computePipelineCreateInfo );
+  }
+
+  // Pipeline layout commands
+  {
+    vk::raii::Device             device = nullptr;
+    vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo;
+    vk::raii::PipelineLayout     pipelineLayout = device.createPipelineLayout( pipelineLayoutCreateInfo );
+  }
+  {
+    vk::raii::Device             device = nullptr;
+    vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo;
+    vk::raii::PipelineLayout     pipelineLayout( device, pipelineLayoutCreateInfo );
+  }
+
+  // Sampler commands
+  {
+    vk::raii::Device      device = nullptr;
+    vk::SamplerCreateInfo samplerCreateInfo;
+    vk::raii::Sampler     sampler = device.createSampler( samplerCreateInfo );
+  }
+  {
+    vk::raii::Device      device = nullptr;
+    vk::SamplerCreateInfo samplerCreateInfo;
+    vk::raii::Sampler     sampler( device, samplerCreateInfo );
+  }
+
+  // Descriptor set commands
+  {
+    vk::raii::Device                  device = nullptr;
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    vk::raii::DescriptorSetLayout     descriptorSetLayout = device.createDescriptorSetLayout( descriptorSetLayoutCreateInfo );
+  }
+  {
+    vk::raii::Device                  device = nullptr;
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    vk::raii::DescriptorSetLayout     descriptorSetLayout( device, descriptorSetLayoutCreateInfo );
+  }
+
+  {
+    vk::raii::Device             device = nullptr;
+    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo;
+    vk::raii::DescriptorPool     descriptorPool = device.createDescriptorPool( descriptorPoolCreateInfo );
+  }
+  {
+    vk::raii::Device             device = nullptr;
+    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo;
+    vk::raii::DescriptorPool     descriptorPool( device, descriptorPoolCreateInfo );
+  }
+
+  {
+    vk::raii::DescriptorPool     descriptorPool = nullptr;
+    vk::DescriptorPoolResetFlags flags          = {};
+    descriptorPool.reset( flags );
+  }
+
+  {
+    vk::raii::Device                     device = nullptr;
+    vk::DescriptorSetAllocateInfo        descriptorSetAllocateInfo;
+    std::vector<vk::raii::DescriptorSet> descriptorSets = device.allocateDescriptorSets( descriptorSetAllocateInfo );
+  }
+  {
+    vk::raii::Device              device = nullptr;
+    vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
+    vk::raii::DescriptorSets      descriptorSets( device, descriptorSetAllocateInfo );
+  }
+
+  {
+    vk::raii::Device                    device = nullptr;
+    std::vector<vk::WriteDescriptorSet> writeDescriptorSets;
+    std::vector<vk::CopyDescriptorSet>  copyDescriptorSets;
+    device.updateDescriptorSets( writeDescriptorSets, copyDescriptorSets );
+  }
+
+  // Command buffer building commands
+  {
+    vk::raii::CommandBuffer commandBuffer     = nullptr;
+    vk::PipelineBindPoint   pipelineBindPoint = {};
+    vk::raii::Pipeline      pipeline          = nullptr;
+    commandBuffer.bindPipeline( pipelineBindPoint, pipeline );
+  }
+
+  {
+    vk::raii::CommandBuffer        commandBuffer     = nullptr;
+    vk::PipelineBindPoint          pipelineBindPoint = {};
+    vk::raii::PipelineLayout       pipelineLayout    = nullptr;
+    uint32_t                       firstSet          = 0;
+    std::vector<vk::DescriptorSet> descriptorSets;
+    std::vector<uint32_t>          dynamicOffsets;
+    commandBuffer.bindDescriptorSets( pipelineBindPoint, pipelineLayout, firstSet, descriptorSets, dynamicOffsets );
+  }
+
+  {
+    vk::raii::CommandBuffer                commandBuffer = nullptr;
+    vk::raii::Image                        image         = nullptr;
+    vk::ImageLayout                        imageLayout   = {};
+    vk::ClearColorValue                    clearColor    = {};
+    std::vector<vk::ImageSubresourceRange> ranges;
+    commandBuffer.clearColorImage( image, imageLayout, clearColor, ranges );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    uint32_t                groupCountX   = 1;
+    uint32_t                groupCountY   = 1;
+    uint32_t                groupCountZ   = 1;
+    commandBuffer.dispatch( groupCountX, groupCountY, groupCountZ );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Buffer        buffer        = nullptr;
+    vk::DeviceSize          offset        = 0;
+    commandBuffer.dispatchIndirect( buffer, offset );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Event         event         = nullptr;
+    vk::PipelineStageFlags  stageMask     = {};
+    commandBuffer.setEvent( event, stageMask );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Event         event         = nullptr;
+    vk::PipelineStageFlags  stageMask     = {};
+    commandBuffer.resetEvent( event, stageMask );
+  }
+
+  {
+    vk::raii::CommandBuffer              commandBuffer = nullptr;
+    std::vector<vk::Event>               events;
+    vk::PipelineStageFlags               srcStageMask = {};
+    vk::PipelineStageFlags               dstStageMask = {};
+    std::vector<vk::MemoryBarrier>       memoryBarriers;
+    std::vector<vk::BufferMemoryBarrier> bufferMemoryBarriers;
+    std::vector<vk::ImageMemoryBarrier>  imageMemoryBarriers;
+    commandBuffer.waitEvents( events, srcStageMask, dstStageMask, memoryBarriers, bufferMemoryBarriers, imageMemoryBarriers );
+  }
+
+  {
+    vk::raii::CommandBuffer  commandBuffer  = nullptr;
+    vk::raii::PipelineLayout pipelineLayout = nullptr;
+    vk::ShaderStageFlags     stageFlags     = {};
+    uint32_t                 offset         = 0;
+    std::vector<uint32_t>    values;
+    commandBuffer.pushConstants( pipelineLayout, stageFlags, offset, static_cast<uint32_t>( values.size() * sizeof( uint32_t ) ), values.data() );
+  }
+  {
+    vk::raii::CommandBuffer  commandBuffer  = nullptr;
+    vk::raii::PipelineLayout pipelineLayout = nullptr;
+    vk::ShaderStageFlags     stageFlags     = {};
+    uint32_t                 offset         = 0;
+    std::vector<uint32_t>    values;
+    commandBuffer.pushConstants<uint32_t>( pipelineLayout, stageFlags, offset, values );
+  }
+
+  //==========================================
+  // Vulkan graphics API interface definitions
+  //==========================================
+
+  // Graphics Pipeline commands
+  {
+    vk::raii::Device                            device        = nullptr;
+    vk::raii::PipelineCache                     pipelineCache = nullptr;
+    std::vector<vk::GraphicsPipelineCreateInfo> graphicsPipelineCreateInfos;
+    std::vector<vk::raii::Pipeline>             pipelines = device.createGraphicsPipelines( pipelineCache, graphicsPipelineCreateInfos );
+  }
+  {
+    vk::raii::Device               device        = nullptr;
+    vk::raii::PipelineCache        pipelineCache = nullptr;
+    vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
+    vk::raii::Pipeline             pipelines = device.createGraphicsPipeline( pipelineCache, graphicsPipelineCreateInfo );
+  }
+  {
+    vk::raii::Device                            device        = nullptr;
+    vk::raii::PipelineCache                     pipelineCache = nullptr;
+    std::vector<vk::GraphicsPipelineCreateInfo> graphicsPipelineCreateInfos;
+    vk::raii::Pipelines                         pipelines( device, pipelineCache, graphicsPipelineCreateInfos );
+  }
+  {
+    vk::raii::Device               device        = nullptr;
+    vk::raii::PipelineCache        pipelineCache = nullptr;
+    vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
+    vk::raii::Pipeline             pipeline( device, pipelineCache, graphicsPipelineCreateInfo );
+  }
+
+  // Pass commands
+  {
+    vk::raii::Device          device = nullptr;
+    vk::FramebufferCreateInfo framebufferCreateInfo;
+    vk::raii::Framebuffer     framebuffer = device.createFramebuffer( framebufferCreateInfo );
+  }
+  {
+    vk::raii::Device          device = nullptr;
+    vk::FramebufferCreateInfo framebufferCreateInfo;
+    vk::raii::Framebuffer     framebuffer( device, framebufferCreateInfo );
+  }
+
+  {
+    vk::raii::Device         device = nullptr;
+    vk::RenderPassCreateInfo renderPassCreateInfo;
+    vk::raii::RenderPass     renderPass = device.createRenderPass( renderPassCreateInfo );
+  }
+  {
+    vk::raii::Device         device = nullptr;
+    vk::RenderPassCreateInfo renderPassCreateInfo;
+    vk::raii::RenderPass     renderPass( device, renderPassCreateInfo );
+  }
+
+  {
+    vk::raii::RenderPass renderPass  = nullptr;
+    vk::Extent2D         granularity = renderPass.getRenderAreaGranularity();
+  }
+
+  // Command buffer building commands
+  {
+    vk::raii::CommandBuffer   commandBuffer = nullptr;
+    uint32_t                  firstViewport = 0;
+    std::vector<vk::Viewport> viewports;
+    commandBuffer.setViewport( firstViewport, viewports );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    uint32_t                firstScissor  = 0;
+    std::vector<vk::Rect2D> scissors;
+    commandBuffer.setScissor( firstScissor, scissors );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    float                   lineWidth     = 1.0f;
+    commandBuffer.setLineWidth( lineWidth );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer           = nullptr;
+    float                   depthBiasConstantFactor = 0.0f;
+    float                   depthBiasClamp          = 0.0f;
+    float                   depthBiasSlopeFactor    = 0.0f;
+    commandBuffer.setDepthBias( depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer  = nullptr;
+    std::array<float, 4>    blendConstants = {};
+    commandBuffer.setBlendConstants( blendConstants );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer  = nullptr;
+    float                   minDepthBounds = 0.0f;
+    float                   maxDepthBounds = 1.0f;
+    commandBuffer.setDepthBounds( minDepthBounds, maxDepthBounds );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::StencilFaceFlags    faceMask      = {};
+    uint32_t                compareMask   = 0;
+    commandBuffer.setStencilCompareMask( faceMask, compareMask );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::StencilFaceFlags    faceMask      = {};
+    uint32_t                writeMask     = 0;
+    commandBuffer.setStencilWriteMask( faceMask, writeMask );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::StencilFaceFlags    faceMask      = {};
+    int32_t                 reference     = 0;
+    commandBuffer.setStencilReference( faceMask, reference );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::Buffer              buffer;
+    vk::DeviceSize          offset    = 0;
+    vk::IndexType           indexType = {};
+    commandBuffer.bindIndexBuffer( buffer, offset, indexType );
+  }
+
+  {
+    vk::raii::CommandBuffer     commandBuffer = nullptr;
+    uint32_t                    firstBinding  = 0;
+    std::vector<vk::DeviceSize> offsets;
+    std::vector<vk::Buffer>     buffers;
+    commandBuffer.bindVertexBuffers( firstBinding, buffers, offsets );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    uint32_t                vertexCount   = 3;
+    uint32_t                instanceCount = 1;
+    uint32_t                firstVertex   = 0;
+    uint32_t                firstInstance = 0;
+    commandBuffer.draw( vertexCount, instanceCount, firstVertex, firstInstance );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    uint32_t                indexCount    = 3;
+    uint32_t                instanceCount = 1;
+    uint32_t                firstIndex    = 0;
+    uint32_t                vertexOffset  = 0;
+    uint32_t                firstInstance = 0;
+    commandBuffer.drawIndexed( indexCount, instanceCount, firstIndex, vertexOffset, firstInstance );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Buffer        buffer        = nullptr;
+    vk::DeviceSize          offset        = 0;
+    uint32_t                drawCount     = 1;
+    uint32_t                stride        = 0;
+    commandBuffer.drawIndirect( buffer, offset, drawCount, stride );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Buffer        buffer        = nullptr;
+    vk::DeviceSize          offset        = 0;
+    uint32_t                drawCount     = 1;
+    uint32_t                stride        = 0;
+    commandBuffer.drawIndexedIndirect( buffer, offset, drawCount, stride );
+  }
+
+  {
+    vk::raii::CommandBuffer    commandBuffer  = nullptr;
+    vk::raii::Image            srcImage       = nullptr;
+    vk::ImageLayout            srcImageLayout = {};
+    vk::raii::Image            dstImage       = nullptr;
+    vk::ImageLayout            dstImageLayout = {};
+    std::vector<vk::ImageBlit> regions;
+    vk::Filter                 filter = {};
+    commandBuffer.blitImage( srcImage, srcImageLayout, dstImage, dstImageLayout, regions, filter );
+  }
+
+  {
+    vk::raii::CommandBuffer                commandBuffer     = nullptr;
+    vk::raii::Image                        image             = nullptr;
+    vk::ImageLayout                        imageLayout       = {};
+    vk::ClearDepthStencilValue             clearDepthStencil = {};
+    std::vector<vk::ImageSubresourceRange> ranges;
+    commandBuffer.clearDepthStencilImage( image, imageLayout, clearDepthStencil, ranges );
+  }
+
+  {
+    vk::raii::CommandBuffer          commandBuffer = nullptr;
+    std::vector<vk::ClearAttachment> clearAttachments;
+    std::vector<vk::ClearRect>       clearRectangles;
+    commandBuffer.clearAttachments( clearAttachments, clearRectangles );
+  }
+
+  {
+    vk::raii::CommandBuffer       commandBuffer  = nullptr;
+    vk::raii::Image               srcImage       = nullptr;
+    vk::ImageLayout               srcImageLayout = {};
+    vk::raii::Image               dstImage       = nullptr;
+    vk::ImageLayout               dstImageLayout = {};
+    std::vector<vk::ImageResolve> regions;
+    commandBuffer.resolveImage( srcImage, srcImageLayout, dstImage, dstImageLayout, regions );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::RenderPassBeginInfo renderPassBeginInfo;
+    vk::SubpassContents     contents = {};
+    commandBuffer.beginRenderPass( renderPassBeginInfo, contents );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::SubpassContents     contents      = {};
+    commandBuffer.nextSubpass( contents );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    commandBuffer.endRenderPass();
+  }
+
+  //==========================================
+  // Vulkan base 1.1 API interface definitions
+  //==========================================
+
+  // Device Initialization
+  {
+    vk::raii::Context context;
+    uint32_t          apiVersion = context.enumerateInstanceVersion();
+  }
+
+  // Promoted from VK_KHR_bind_memory2
+  {
+    vk::raii::Device                      device = nullptr;
+    std::vector<vk::BindBufferMemoryInfo> bufferMemoryBindInfos;
+    device.bindBufferMemory2( bufferMemoryBindInfos );
+  }
+
+  {
+    vk::raii::Device                     device = nullptr;
+    std::vector<vk::BindImageMemoryInfo> imageMemoryBindInfos;
+    device.bindImageMemory2( imageMemoryBindInfos );
+  }
+
+  // Promoted from VK_KHR_device_group
+  {
+    vk::raii::Device           device             = nullptr;
+    uint32_t                   heapIndex          = 0;
+    uint32_t                   localDeviceIndex   = 0;
+    uint32_t                   remoteDeviceIndex  = 0;
+    vk::PeerMemoryFeatureFlags peerMemoryFeatures = device.getGroupPeerMemoryFeatures( heapIndex, localDeviceIndex, remoteDeviceIndex );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    uint32_t                deviceMask    = 0;
+    commandBuffer.setDeviceMask( deviceMask );
+  }
+
+  // Promoted from VK_KHR_device_group_creation
+  {
+    vk::raii::Instance                             instance                      = nullptr;
+    std::vector<vk::PhysicalDeviceGroupProperties> physicalDeviceGroupProperties = instance.enumeratePhysicalDeviceGroups();
+  }
+
+  // Promoted from VK_KHR_get_memory_requirements2
+  {
+    vk::raii::Device                 device = nullptr;
+    vk::ImageMemoryRequirementsInfo2 imageMemoryRequirementsInfo2;
+    vk::MemoryRequirements2          memoryRequirements2 = device.getImageMemoryRequirements2( imageMemoryRequirementsInfo2 );
+  }
+  {
+    vk::raii::Device                                                             device = nullptr;
+    vk::ImageMemoryRequirementsInfo2                                             imageMemoryRequirementsInfo2;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirements2Chain =
+      device.getImageMemoryRequirements2<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( imageMemoryRequirementsInfo2 );
+  }
+
+  {
+    vk::raii::Device                  device = nullptr;
+    vk::BufferMemoryRequirementsInfo2 bufferMemoryRequirementsInfo2;
+    vk::MemoryRequirements2           memoryRequirements2 = device.getBufferMemoryRequirements2( bufferMemoryRequirementsInfo2 );
+  }
+  {
+    vk::raii::Device                                                             device = nullptr;
+    vk::BufferMemoryRequirementsInfo2                                            bufferMemoryRequirementsInfo2;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirements2Chain =
+      device.getBufferMemoryRequirements2<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( bufferMemoryRequirementsInfo2 );
+  }
+
+  {
+    vk::raii::Device                                device = nullptr;
+    vk::ImageSparseMemoryRequirementsInfo2          imageSparseMemoryRequirementsInfo2;
+    std::vector<vk::SparseImageMemoryRequirements2> sparseImageMemoryRequirements2 =
+      device.getImageSparseMemoryRequirements2( imageSparseMemoryRequirementsInfo2 );
+  }
+
+  // Promoted from VK_KHR_get_physical_device_properties2
+  {
+    vk::raii::PhysicalDevice    physicalDevice          = nullptr;
+    vk::PhysicalDeviceFeatures2 physicalDeviceFeatures2 = physicalDevice.getFeatures2();
+  }
+  {
+    vk::raii::PhysicalDevice                                                               physicalDevice = nullptr;
+    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDevicePrivateDataFeatures> physicalDeviceFeatures2Chain =
+      physicalDevice.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDevicePrivateDataFeatures>();
+  }
+
+  {
+    vk::raii::PhysicalDevice      physicalDevice = nullptr;
+    vk::PhysicalDeviceProperties2 physicalDeviceProperties2;
+    physicalDevice.getProperties2( &physicalDeviceProperties2 );
+  }
+  {
+    vk::raii::PhysicalDevice      physicalDevice            = nullptr;
+    vk::PhysicalDeviceProperties2 physicalDeviceProperties2 = physicalDevice.getProperties2();
+  }
+  {
+    vk::raii::PhysicalDevice                                                                    physicalDevice = nullptr;
+    vk::StructureChain<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceMultiDrawPropertiesEXT> physicalDeviceProperties2Chain =
+      physicalDevice.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceMultiDrawPropertiesEXT>();
+  }
+
+  {
+    vk::raii::PhysicalDevice physicalDevice = nullptr;
+    vk::Format               format         = {};
+    vk::FormatProperties2    formatProperties2;
+    physicalDevice.getFormatProperties2( format, &formatProperties2 );
+  }
+  {
+    vk::raii::PhysicalDevice physicalDevice    = nullptr;
+    vk::Format               format            = {};
+    vk::FormatProperties2    formatProperties2 = physicalDevice.getFormatProperties2( format );
+  }
+  {
+    vk::raii::PhysicalDevice                                         physicalDevice = nullptr;
+    vk::Format                                                       format         = {};
+    vk::StructureChain<vk::FormatProperties2, vk::FormatProperties3> formatProperties2Chain =
+      physicalDevice.getFormatProperties2<vk::FormatProperties2, vk::FormatProperties3>( format );
+  }
+
+  {
+    vk::raii::PhysicalDevice           physicalDevice = nullptr;
+    vk::PhysicalDeviceImageFormatInfo2 imageFormatInfo2;
+    vk::ImageFormatProperties2         imageFormatProperties2 = physicalDevice.getImageFormatProperties2( imageFormatInfo2 );
+  }
+  {
+    vk::raii::PhysicalDevice                                                          physicalDevice = nullptr;
+    vk::PhysicalDeviceImageFormatInfo2                                                imageFormatInfo2;
+    vk::StructureChain<vk::ImageFormatProperties2, vk::ExternalImageFormatProperties> imageFormatProperties2Chain =
+      physicalDevice.getImageFormatProperties2<vk::ImageFormatProperties2, vk::ExternalImageFormatProperties>( imageFormatInfo2 );
+  }
+
+  {
+    vk::raii::PhysicalDevice                physicalDevice         = nullptr;
+    std::vector<vk::QueueFamilyProperties2> queueFamilyProperties2 = physicalDevice.getQueueFamilyProperties2();
+  }
+  {
+    vk::raii::PhysicalDevice physicalDevice = nullptr;
+    using QueueFamilyProperties2Chain       = vk::StructureChain<vk::QueueFamilyProperties2, vk::QueueFamilyCheckpointProperties2NV>;
+    std::vector<QueueFamilyProperties2Chain> queueFamilyProperties2Chain = physicalDevice.getQueueFamilyProperties2<QueueFamilyProperties2Chain>();
+  }
+
+  {
+    vk::raii::PhysicalDevice            physicalDevice    = nullptr;
+    vk::PhysicalDeviceMemoryProperties2 memoryProperties2 = physicalDevice.getMemoryProperties2();
+  }
+  {
+    vk::raii::PhysicalDevice                                                                             physicalDevice = nullptr;
+    vk::StructureChain<vk::PhysicalDeviceMemoryProperties2, vk::PhysicalDeviceMemoryBudgetPropertiesEXT> memoryProperties2Chain =
+      physicalDevice.getMemoryProperties2<vk::PhysicalDeviceMemoryProperties2, vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+  }
+
+  {
+    vk::raii::PhysicalDevice                      physicalDevice = nullptr;
+    vk::PhysicalDeviceSparseImageFormatInfo2      sparseImageFormatInfo2;
+    std::vector<vk::SparseImageFormatProperties2> sparseImageFormatProperties2 = physicalDevice.getSparseImageFormatProperties2( sparseImageFormatInfo2 );
+  }
+
+  // Promoted from VK_KHR_maintenance1
+  {
+    vk::raii::CommandPool    commandPool = nullptr;
+    vk::CommandPoolTrimFlags trimFlags   = {};
+    commandPool.trim( trimFlags );
+  }
+
+  // Originally based on VK_KHR_protected_memory
+  {
+    vk::raii::Device     device = nullptr;
+    vk::DeviceQueueInfo2 queueInfo2;
+    vk::raii::Queue      queue = device.getQueue2( queueInfo2 );
+  }
+
+  // Promoted from VK_KHR_external_memory_capabilities
+  {
+    vk::raii::PhysicalDevice             physicalDevice = nullptr;
+    vk::PhysicalDeviceExternalBufferInfo externalBufferInfo;
+    vk::ExternalBufferProperties         externalBufferProperties = physicalDevice.getExternalBufferProperties( externalBufferInfo );
+  }
+
+  // Promoted from VK_KHR_external_fence_capabilities
+  {
+    vk::raii::PhysicalDevice            physicalDevice = nullptr;
+    vk::PhysicalDeviceExternalFenceInfo externalFenceInfo;
+    vk::ExternalFenceProperties         externalFenceProperties = physicalDevice.getExternalFenceProperties( externalFenceInfo );
+  }
+
+  // Promoted from VK_KHR_external_semaphore_capabilities
+  {
+    vk::raii::PhysicalDevice                physicalDevice = nullptr;
+    vk::PhysicalDeviceExternalSemaphoreInfo externalSemaphoreInfo;
+    vk::ExternalSemaphoreProperties         externalSemaphoreProperties = physicalDevice.getExternalSemaphoreProperties( externalSemaphoreInfo );
+  }
+
+  //=============================================
+  // Vulkan compute 1.1 API interface definitions
+  //=============================================
+
+  // Promoted from VK_KHR_device_group
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    uint32_t                baseGroupX    = 0;
+    uint32_t                baseGroupY    = 0;
+    uint32_t                baseGroupZ    = 0;
+    uint32_t                groupCountX   = 1;
+    uint32_t                groupCountY   = 1;
+    uint32_t                groupCountZ   = 1;
+    commandBuffer.dispatchBase( baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ );
+  }
+
+  // Promoted from VK_KHR_descriptor_update_template
+  {
+    vk::raii::Device                       device = nullptr;
+    vk::DescriptorUpdateTemplateCreateInfo descriptorUpdateTemplateCreateInfo;
+    vk::raii::DescriptorUpdateTemplate     descriptorUpdateTemplate = device.createDescriptorUpdateTemplate( descriptorUpdateTemplateCreateInfo );
+  }
+  {
+    vk::raii::Device                       device = nullptr;
+    vk::DescriptorUpdateTemplateCreateInfo descriptorUpdateTemplateCreateInfo;
+    vk::raii::DescriptorUpdateTemplate     descriptorUpdateTemplate( device, descriptorUpdateTemplateCreateInfo );
+  }
+
+  {
+    vk::raii::DescriptorSet            descriptorSet            = nullptr;
+    vk::raii::DescriptorUpdateTemplate descriptorUpdateTemplate = nullptr;
+    uint32_t                           data                     = 0;
+    descriptorSet.updateWithTemplate( *descriptorUpdateTemplate, data );
+  }
+
+  // Promoted from VK_KHR_maintenance3
+  {
+    vk::raii::Device                  device = nullptr;
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    vk::DescriptorSetLayoutSupport    descriptorSetLayoutSupport = device.getDescriptorSetLayoutSupport( descriptorSetLayoutCreateInfo );
+  }
+  {
+    vk::raii::Device                                                                                          device = nullptr;
+    vk::DescriptorSetLayoutCreateInfo                                                                         descriptorSetLayoutCreateInfo;
+    vk::StructureChain<vk::DescriptorSetLayoutSupport, vk::DescriptorSetVariableDescriptorCountLayoutSupport> descriptorSetLayoutSupportChain =
+      device.getDescriptorSetLayoutSupport<vk::DescriptorSetLayoutSupport, vk::DescriptorSetVariableDescriptorCountLayoutSupport>(
+        descriptorSetLayoutCreateInfo );
+  }
+
+  // Promoted from VK_KHR_sampler_ycbcr_conversion
+  {
+    vk::raii::Device                     device = nullptr;
+    vk::SamplerYcbcrConversionCreateInfo samplerYcbcrConversionCreateInfo;
+    vk::raii::SamplerYcbcrConversion     samplerYcbcrConversion = device.createSamplerYcbcrConversion( samplerYcbcrConversionCreateInfo );
+  }
+  {
+    vk::raii::Device                     device = nullptr;
+    vk::SamplerYcbcrConversionCreateInfo samplerYcbcrConversionCreateInfo;
+    vk::raii::SamplerYcbcrConversion     samplerYcbcrConversion( device, samplerYcbcrConversionCreateInfo );
+  }
+
+  //==========================================
+  // Vulkan base 1.2 API interface definitions
+  //==========================================
+
+  // Promoted from VK_EXT_host_query_reset
+  {
+    vk::raii::QueryPool queryPool  = nullptr;
+    uint32_t            firstQuery = 0;
+    uint32_t            queryCount = 1;
+    queryPool.reset( firstQuery, queryCount );
+  }
+
+  // Promoted from VK_KHR_timeline_semaphore
+  {
+    vk::raii::Semaphore semaphore = nullptr;
+    uint64_t            value     = semaphore.getCounterValue();
+  }
+
+  {
+    vk::raii::Device      device = nullptr;
+    vk::SemaphoreWaitInfo waitInfo;
+    uint64_t              timeout = {};
+    vk::Result            result  = device.waitSemaphores( waitInfo, timeout );
+  }
+
+  {
+    vk::raii::Device        device = nullptr;
+    vk::SemaphoreSignalInfo signalInfo;
+    device.signalSemaphore( signalInfo );
+  }
+
+  // Promoted from VK_KHR_buffer_device_address
+  {
+    vk::raii::Device            device = nullptr;
+    vk::BufferDeviceAddressInfo addressInfo;
+    vk::DeviceAddress           address = device.getBufferAddress( addressInfo );
+  }
+
+  {
+    vk::raii::Device            device = nullptr;
+    vk::BufferDeviceAddressInfo addressInfo;
+    uint64_t                    address = device.getBufferOpaqueCaptureAddress( addressInfo );
+  }
+
+  {
+    vk::raii::Device                         device = nullptr;
+    vk::DeviceMemoryOpaqueCaptureAddressInfo addressInfo;
+    uint64_t                                 address = device.getMemoryOpaqueCaptureAddress( addressInfo );
+  }
+
+  //==============================================
+  // Vulkan graphics 1.2 API interface definitions
+  //==============================================
+
+  // Promoted from VK_KHR_draw_indirect_count
+  {
+    vk::raii::CommandBuffer commandBuffer     = nullptr;
+    vk::raii::Buffer        buffer            = nullptr;
+    vk::DeviceSize          offset            = 0;
+    vk::raii::Buffer        countBuffer       = nullptr;
+    vk::DeviceSize          countBufferOffset = 0;
+    uint32_t                maxDrawCount      = 1;
+    uint32_t                stride            = 0;
+    commandBuffer.drawIndirectCount( *buffer, offset, *countBuffer, countBufferOffset, maxDrawCount, stride );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer     = nullptr;
+    vk::raii::Buffer        buffer            = nullptr;
+    vk::DeviceSize          offset            = 0;
+    vk::raii::Buffer        countBuffer       = nullptr;
+    vk::DeviceSize          countBufferOffset = 0;
+    uint32_t                maxDrawCount      = 1;
+    uint32_t                stride            = 0;
+    commandBuffer.drawIndexedIndirectCount( *buffer, offset, *countBuffer, countBufferOffset, maxDrawCount, stride );
+  }
+
+  // Promoted from VK_KHR_create_renderpass2
+  {
+    vk::raii::Device          device = nullptr;
+    vk::RenderPassCreateInfo2 renderPassCreateInfo2;
+    vk::raii::RenderPass      renderPass = device.createRenderPass2( renderPassCreateInfo2 );
+  }
+  {
+    vk::raii::Device          device = nullptr;
+    vk::RenderPassCreateInfo2 renderPassCreateInfo2;
+    vk::raii::RenderPass      renderPass( device, renderPassCreateInfo2 );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::RenderPassBeginInfo renderPassBeginInfo;
+    vk::SubpassBeginInfo    subpassBeginInfo;
+    commandBuffer.beginRenderPass2( renderPassBeginInfo, subpassBeginInfo );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::RenderPassBeginInfo renderPassBeginInfo;
+    vk::SubpassBeginInfo    subpassBeginInfo;
+    vk::SubpassEndInfo      subpassEndInfo;
+    commandBuffer.nextSubpass2( subpassBeginInfo, subpassEndInfo );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::SubpassEndInfo      subpassEndInfo;
+    commandBuffer.endRenderPass2( subpassEndInfo );
+  }
+
+  //==========================================
+  // Vulkan base 1.3 API interface definitions
+  //==========================================
+
+  // Promoted from VK_EXT_tooling_info
+  {
+    vk::raii::PhysicalDevice                      physicalDevice = nullptr;
+    std::vector<vk::PhysicalDeviceToolProperties> toolProperties = physicalDevice.getToolProperties();
+  }
+
+  // Promoted from VK_EXT_private_data
+  {
+    vk::raii::Device              device = nullptr;
+    vk::PrivateDataSlotCreateInfo privateDataSlotCreateInfo;
+    vk::raii::PrivateDataSlot     privateDataSlot = device.createPrivateDataSlot( privateDataSlotCreateInfo );
+  }
+
+  {
+    vk::raii::Device          device          = nullptr;
+    vk::ObjectType            objectType      = {};
+    uint64_t                  objectHandle    = {};
+    vk::raii::PrivateDataSlot privateDataSlot = nullptr;
+    uint64_t                  data            = {};
+    device.setPrivateData( objectType, objectHandle, *privateDataSlot, data );
+  }
+
+  {
+    vk::raii::Device          device          = nullptr;
+    vk::ObjectType            objectType      = {};
+    uint64_t                  objectHandle    = {};
+    vk::raii::PrivateDataSlot privateDataSlot = nullptr;
+    uint64_t                  data            = device.getPrivateData( objectType, objectHandle, *privateDataSlot );
+  }
+
+  // Promoted from VK_KHR_synchronization2
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::DependencyInfo      dependencyInfo;
+    commandBuffer.pipelineBarrier2( dependencyInfo );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::PipelineStageFlags2 stage         = {};
+    vk::raii::QueryPool     queryPool     = nullptr;
+    uint32_t                query         = 0;
+    commandBuffer.writeTimestamp2( stage, *queryPool, query );
+  }
+
+  {
+    vk::raii::Queue              queue = nullptr;
+    std::vector<vk::SubmitInfo2> submitInfos;
+    vk::raii::Fence              fence = nullptr;
+    queue.submit2( submitInfos, *fence );
+  }
+
+  // Promoted from VK_KHR_copy_commands2
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::CopyBufferInfo2     copyBufferInfo2;
+    commandBuffer.copyBuffer2( copyBufferInfo2 );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::CopyImageInfo2      copyImageInfo2;
+    commandBuffer.copyImage2( copyImageInfo2 );
+  }
+
+  {
+    vk::raii::CommandBuffer    commandBuffer = nullptr;
+    vk::CopyBufferToImageInfo2 copyBufferToImageInfo2;
+    commandBuffer.copyBufferToImage2( copyBufferToImageInfo2 );
+  }
+
+  {
+    vk::raii::CommandBuffer    commandBuffer = nullptr;
+    vk::CopyImageToBufferInfo2 copyImageToBufferInfo2;
+    commandBuffer.copyImageToBuffer2( copyImageToBufferInfo2 );
+  }
+
+  // Promoted from VK_KHR_maintenance4
+  {
+    vk::raii::Device                   device = nullptr;
+    vk::DeviceBufferMemoryRequirements bufferMemoryRequirements;
+    vk::MemoryRequirements2            memoryRequirements = device.getBufferMemoryRequirements( bufferMemoryRequirements );
+  }
+  {
+    vk::raii::Device                                                             device = nullptr;
+    vk::DeviceBufferMemoryRequirements                                           bufferMemoryRequirements;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirementsChain =
+      device.getBufferMemoryRequirements<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( bufferMemoryRequirements );
+  }
+
+  {
+    vk::raii::Device                  device = nullptr;
+    vk::DeviceImageMemoryRequirements imageMemoryRequirements;
+    vk::MemoryRequirements2           memoryRequirements = device.getImageMemoryRequirements( imageMemoryRequirements );
+  }
+  {
+    vk::raii::Device                                                             device = nullptr;
+    vk::DeviceImageMemoryRequirements                                            imageMemoryRequirements;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirementsChain =
+      device.getImageMemoryRequirements<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( imageMemoryRequirements );
+  }
+
+  {
+    vk::raii::Device                                device = nullptr;
+    vk::DeviceImageMemoryRequirements               imageMemoryRequirements;
+    std::vector<vk::SparseImageMemoryRequirements2> sparseImageMemoryRequirements = device.getImageSparseMemoryRequirements( imageMemoryRequirements );
+  }
+
+  //=============================================
+  // Vulkan compute 1.3 API interface definitions
+  //=============================================
+
+  // Promoted from VK_KHR_synchronization2
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Event         event         = nullptr;
+    vk::DependencyInfo      dependencyInfo;
+    commandBuffer.setEvent2( *event, dependencyInfo );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Event         event         = nullptr;
+    vk::PipelineStageFlags2 stage         = {};
+    commandBuffer.resetEvent2( *event, stage );
+  }
+
+  {
+    vk::raii::CommandBuffer         commandBuffer = nullptr;
+    std::vector<vk::Event>          events;
+    std::vector<vk::DependencyInfo> depdencyInfos;
+    commandBuffer.waitEvents2( events, depdencyInfos );
+  }
+
+  //==============================================
+  // Vulkan graphics 1.3 API interface definitions
+  //==============================================
+
+  // Promoted from VK_KHR_copy_commands2
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::BlitImageInfo2      blitImageInfo2;
+    commandBuffer.blitImage2( blitImageInfo2 );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::ResolveImageInfo2   resolveImageInfo2;
+    commandBuffer.resolveImage2( resolveImageInfo2 );
+  }
+
+  // Promoted from VK_KHR_dynamic_rendering
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::RenderingInfo       renderingInfo;
+    commandBuffer.beginRendering( renderingInfo );
+  }
+
+  {
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    commandBuffer.endRendering();
+  }
+
+  return 0;
+}

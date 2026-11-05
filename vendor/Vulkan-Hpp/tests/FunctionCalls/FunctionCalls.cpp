@@ -1,0 +1,3030 @@
+// SPDX-FileCopyrightText: 2018-2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+// VulkanHpp Tests : FunctionCalls
+//                   Compile test on using function calls to catch API changes
+
+#if defined( _MSC_VER )
+#  pragma warning( disable : 4189 )  // local variable is initialized but not referenced
+#endif
+#if defined( __clang__ )
+#  pragma clang diagnostic ignored "-Wunused-variable"
+#elif defined( __GNUC__ )
+#  pragma GCC diagnostic ignored "-Wunused-variable"
+#  pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#else
+// unknown compiler... just ignore the warnings for yourselves ;)
+#endif
+
+#ifdef VULKAN_HPP_USE_CXX_MODULE
+#  include <vulkan/vulkan.h>
+import std;
+import vulkan;
+#else
+#  include <vulkan/vulkan.hpp>
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+#endif
+
+int main()
+{
+  //======================================
+  // Vulkan base API interface definitions
+  //======================================
+
+  // Device initialization
+  {
+    vk::InstanceCreateInfo  instanceCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Instance            instance;
+    vk::Result              result = vk::createInstance( &instanceCreateInfo, &allocationCallbacks, &instance );
+  }
+  {
+    vk::InstanceCreateInfo instanceCreateInfo;
+    vk::Instance           instance = vk::createInstance( instanceCreateInfo );
+  }
+
+  {
+    vk::Instance instance;
+    instance.destroy();
+  }
+
+  {
+    vk::Instance instance;
+    uint32_t     physicalDeviceCount;
+    vk::Result   result = instance.enumeratePhysicalDevices( &physicalDeviceCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::PhysicalDevice> physicalDevices( physicalDeviceCount );
+      result = instance.enumeratePhysicalDevices( &physicalDeviceCount, physicalDevices.data() );
+    }
+  }
+  {
+    vk::Instance                    instance;
+    std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+  }
+  {
+    vk::Instance                       instance;
+    std::allocator<vk::PhysicalDevice> allocator;
+    std::vector<vk::PhysicalDevice>    physicalDevices = instance.enumeratePhysicalDevices( allocator );
+  }
+
+  {
+    vk::PhysicalDevice         physicalDevice;
+    vk::PhysicalDeviceFeatures physicalDeviceFeatures;
+    physicalDevice.getFeatures( &physicalDeviceFeatures );
+  }
+  {
+    vk::PhysicalDevice         physicalDevice;
+    vk::PhysicalDeviceFeatures physicalDeviceFeatures = physicalDevice.getFeatures();
+  }
+
+  {
+    vk::PhysicalDevice   physicalDevice;
+    vk::Format           format = {};
+    vk::FormatProperties formatProperties;
+    physicalDevice.getFormatProperties( format, &formatProperties );
+  }
+  {
+    vk::PhysicalDevice   physicalDevice;
+    vk::Format           format           = {};
+    vk::FormatProperties formatProperties = physicalDevice.getFormatProperties( format );
+  }
+
+  {
+    vk::PhysicalDevice        physicalDevice;
+    vk::Format                format      = {};
+    vk::ImageType             imageType   = {};
+    vk::ImageTiling           imageTiling = {};
+    vk::ImageUsageFlags       imageUsageFlags;
+    vk::ImageCreateFlags      imageCreateFlags;
+    vk::ImageFormatProperties imageFormatProperties;
+    vk::Result result = physicalDevice.getImageFormatProperties( format, imageType, imageTiling, imageUsageFlags, imageCreateFlags, &imageFormatProperties );
+  }
+  {
+    vk::PhysicalDevice        physicalDevice;
+    vk::Format                format      = {};
+    vk::ImageType             imageType   = {};
+    vk::ImageTiling           imageTiling = {};
+    vk::ImageUsageFlags       imageUsageFlags;
+    vk::ImageCreateFlags      imageCreateFlags;
+    vk::ImageFormatProperties imageFormatProperties =
+      physicalDevice.getImageFormatProperties( format, imageType, imageTiling, imageUsageFlags, imageCreateFlags );
+  }
+
+  {
+    vk::PhysicalDevice           physicalDevice;
+    vk::PhysicalDeviceProperties physicalDeviceProperties;
+    physicalDevice.getProperties( &physicalDeviceProperties );
+  }
+  {
+    vk::PhysicalDevice           physicalDevice;
+    vk::PhysicalDeviceProperties physicalDeviceProperties = physicalDevice.getProperties();
+  }
+
+  {
+    vk::PhysicalDevice physicalDevice;
+    uint32_t           queueFamilyPropertyCount;
+    physicalDevice.getQueueFamilyProperties( &queueFamilyPropertyCount, nullptr );
+    std::vector<vk::QueueFamilyProperties> queueFamilyProperties( queueFamilyPropertyCount );
+    physicalDevice.getQueueFamilyProperties( &queueFamilyPropertyCount, queueFamilyProperties.data() );
+  }
+  {
+    vk::PhysicalDevice                     physicalDevice;
+    std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+  }
+  {
+    vk::PhysicalDevice                        physicalDevice;
+    std::allocator<vk::QueueFamilyProperties> allocator;
+    std::vector<vk::QueueFamilyProperties>    queueFamilyProperties = physicalDevice.getQueueFamilyProperties( allocator );
+  }
+
+  {
+    vk::PhysicalDevice                 physicalDevice;
+    vk::PhysicalDeviceMemoryProperties memoryProperties;
+    physicalDevice.getMemoryProperties( &memoryProperties );
+  }
+  {
+    vk::PhysicalDevice                 physicalDevice;
+    vk::PhysicalDeviceMemoryProperties memoryProperties = physicalDevice.getMemoryProperties();
+  }
+
+  {
+    vk::Instance       instance;
+    PFN_vkVoidFunction voidFunction = instance.getProcAddr( "vkCreateInstance" );
+  }
+  {
+    vk::Instance       instance;
+    std::string        name         = "vkCreateInstance";
+    PFN_vkVoidFunction voidFunction = instance.getProcAddr( name );
+  }
+
+  {
+    vk::Device         device;
+    PFN_vkVoidFunction voidFunction = device.getProcAddr( "vkCreateInstance" );
+  }
+  {
+    vk::Device         device;
+    std::string        name         = "vkCreateInstance";
+    PFN_vkVoidFunction voidFunction = device.getProcAddr( name );
+  }
+
+  // Device commands
+  {
+    vk::PhysicalDevice      physicalDevice;
+    vk::DeviceCreateInfo    deviceCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Device              device;
+    vk::Result              result = physicalDevice.createDevice( &deviceCreateInfo, &allocationCallbacks, &device );
+  }
+  {
+    vk::PhysicalDevice   physicalDevice;
+    vk::DeviceCreateInfo deviceCreateInfo;
+    vk::Device           device = physicalDevice.createDevice( deviceCreateInfo );
+  }
+
+  {
+    vk::Device device;
+    device.destroy();
+  }
+
+  // Extension discovery commands
+  {
+    uint32_t   propertyCount;
+    vk::Result result = vk::enumerateInstanceExtensionProperties( nullptr, &propertyCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::ExtensionProperties> properties( propertyCount );
+      result = vk::enumerateInstanceExtensionProperties( nullptr, &propertyCount, properties.data() );
+    }
+  }
+  {
+    std::vector<vk::ExtensionProperties> properties = vk::enumerateInstanceExtensionProperties( nullptr );
+  }
+  {
+    using Allocator = std::allocator<vk::ExtensionProperties>;
+    Allocator                                       allocator;
+    std::vector<vk::ExtensionProperties, Allocator> properties = vk::enumerateInstanceExtensionProperties( nullptr, allocator );
+  }
+
+  {
+    vk::PhysicalDevice physicalDevice;
+    uint32_t           propertyCount;
+    vk::Result         result = physicalDevice.enumerateDeviceExtensionProperties( nullptr, &propertyCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::ExtensionProperties> properties( propertyCount );
+      result = physicalDevice.enumerateDeviceExtensionProperties( nullptr, &propertyCount, properties.data() );
+    }
+  }
+  {
+    vk::PhysicalDevice                   physicalDevice;
+    std::vector<vk::ExtensionProperties> properties = physicalDevice.enumerateDeviceExtensionProperties( nullptr );
+  }
+  {
+    vk::PhysicalDevice physicalDevice;
+    using Allocator = std::allocator<vk::ExtensionProperties>;
+    Allocator                                       allocator;
+    std::vector<vk::ExtensionProperties, Allocator> properties = physicalDevice.enumerateDeviceExtensionProperties( nullptr, allocator );
+  }
+
+  // Layer discovery commands
+  {
+    uint32_t   propertyCount;
+    vk::Result result = vk::enumerateInstanceLayerProperties( &propertyCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::LayerProperties> properties( propertyCount );
+      result = vk::enumerateInstanceLayerProperties( &propertyCount, properties.data() );
+    }
+  }
+  {
+    std::vector<vk::LayerProperties> properties = vk::enumerateInstanceLayerProperties();
+  }
+  {
+    using Allocator = std::allocator<vk::LayerProperties>;
+    Allocator                                   allocator;
+    std::vector<vk::LayerProperties, Allocator> properties = vk::enumerateInstanceLayerProperties( allocator );
+  }
+
+  {
+    vk::PhysicalDevice physicalDevice;
+    uint32_t           propertyCount;
+    vk::Result         result = physicalDevice.enumerateDeviceLayerProperties( &propertyCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::LayerProperties> properties( propertyCount );
+      result = physicalDevice.enumerateDeviceLayerProperties( &propertyCount, properties.data() );
+    }
+  }
+  {
+    vk::PhysicalDevice               physicalDevice;
+    std::vector<vk::LayerProperties> properties = physicalDevice.enumerateDeviceLayerProperties();
+  }
+  {
+    vk::PhysicalDevice physicalDevice;
+    using Allocator = std::allocator<vk::LayerProperties>;
+    Allocator                                   allocator;
+    std::vector<vk::LayerProperties, Allocator> properties = physicalDevice.enumerateDeviceLayerProperties( allocator );
+  }
+
+  // Queue commands
+  {
+    vk::Device device;
+    uint32_t   queueFamilyIndex = 0;
+    uint32_t   queueIndex       = 0;
+    vk::Queue  queue;
+    device.getQueue( queueFamilyIndex, queueIndex, &queue );
+  }
+  {
+    vk::Device device;
+    uint32_t   queueFamilyIndex = 0;
+    uint32_t   queueIndex       = 0;
+    vk::Queue  queue            = device.getQueue( queueFamilyIndex, queueIndex );
+  }
+
+  {
+    vk::Queue      queue;
+    uint32_t       submitCount = 1;
+    vk::SubmitInfo submitInfo;
+    vk::Fence      fence;
+    vk::Result     result = queue.submit( submitCount, &submitInfo, fence );
+  }
+  {
+    vk::Queue      queue;
+    vk::SubmitInfo submitInfo;
+    vk::Fence      fence;
+    queue.submit( submitInfo, fence );
+  }
+
+  {
+    vk::Queue queue;
+    queue.waitIdle();
+  }
+
+  {
+    vk::Device device;
+    device.waitIdle();
+  }
+
+  // Memory commands
+  {
+    vk::Device              device;
+    vk::MemoryAllocateInfo  memoryAllocateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::DeviceMemory        memory;
+    vk::Result              result = device.allocateMemory( &memoryAllocateInfo, &allocationCallbacks, &memory );
+  }
+  {
+    vk::Device             device;
+    vk::MemoryAllocateInfo memoryAllocateInfo;
+    vk::DeviceMemory       memory = device.allocateMemory( memoryAllocateInfo );
+  }
+
+  {
+    vk::Device       device;
+    vk::DeviceMemory memory;
+    device.freeMemory( memory );
+  }
+
+  {
+    vk::Device         device;
+    vk::DeviceMemory   memory;
+    vk::DeviceSize     offset         = 0;
+    vk::DeviceSize     size           = vk::WholeSize;
+    vk::MemoryMapFlags memoryMapFlags = {};
+    void *             pData;
+    vk::Result         result = device.mapMemory( memory, offset, size, memoryMapFlags, &pData );
+  }
+  {
+    vk::Device         device;
+    vk::DeviceMemory   memory;
+    vk::DeviceSize     offset         = 0;
+    vk::DeviceSize     size           = vk::WholeSize;
+    vk::MemoryMapFlags memoryMapFlags = {};
+    void *             pData          = device.mapMemory( memory, offset, size, memoryMapFlags );
+  }
+
+  {
+    vk::Device       device;
+    vk::DeviceMemory memory;
+    device.unmapMemory( memory );
+  }
+
+  {
+    vk::Device            device;
+    vk::DeviceMemory      memory;
+    vk::MappedMemoryRange mappedMemoryRange;
+    vk::Result            result = device.flushMappedMemoryRanges( 1, &mappedMemoryRange );
+  }
+  {
+    vk::Device                         device;
+    std::vector<vk::MappedMemoryRange> mappedMemoryRanges;
+    device.flushMappedMemoryRanges( mappedMemoryRanges );
+  }
+
+  {
+    vk::Device            device;
+    vk::MappedMemoryRange mappedMemoryRange;
+    vk::Result            result = device.invalidateMappedMemoryRanges( 1, &mappedMemoryRange );
+  }
+  {
+    vk::Device                         device;
+    std::vector<vk::MappedMemoryRange> mappedMemoryRanges;
+    device.invalidateMappedMemoryRanges( mappedMemoryRanges );
+  }
+
+  {
+    vk::Device       device;
+    vk::DeviceMemory memory;
+    vk::DeviceSize   commitment;
+    device.getMemoryCommitment( memory, &commitment );
+  }
+  {
+    vk::Device       device;
+    vk::DeviceMemory memory;
+    vk::DeviceSize   commitment = device.getMemoryCommitment( memory );
+  }
+
+  // Memory management API commands
+  {
+    vk::Device       device;
+    vk::Buffer       buffer;
+    vk::DeviceMemory deviceMemory;
+    vk::DeviceSize   memoryOffset = 0;
+    device.bindBufferMemory( buffer, deviceMemory, memoryOffset );
+  }
+
+  {
+    vk::Device       device;
+    vk::Image        image;
+    vk::DeviceMemory deviceMemory;
+    vk::DeviceSize   memoryOffset = 0;
+    device.bindImageMemory( image, deviceMemory, memoryOffset );
+  }
+
+  {
+    vk::Device             device;
+    vk::Buffer             buffer;
+    vk::MemoryRequirements memoryRequirements;
+    device.getBufferMemoryRequirements( buffer, &memoryRequirements );
+  }
+  {
+    vk::Device             device;
+    vk::Buffer             buffer;
+    vk::MemoryRequirements memoryRequirements = device.getBufferMemoryRequirements( buffer );
+  }
+
+  {
+    vk::Device             device;
+    vk::Image              image;
+    vk::MemoryRequirements memoryRequirements;
+    device.getImageMemoryRequirements( image, &memoryRequirements );
+  }
+  {
+    vk::Device             device;
+    vk::Image              image;
+    vk::MemoryRequirements memoryRequirements = device.getImageMemoryRequirements( image );
+  }
+
+  // Sparse resource memory management API commands (optional)
+  {
+    vk::Device device;
+    vk::Image  image;
+    uint32_t   sparseMemoryRequirementCount;
+    device.getImageSparseMemoryRequirements( image, &sparseMemoryRequirementCount, nullptr );
+    if ( sparseMemoryRequirementCount )
+    {
+      std::vector<vk::SparseImageMemoryRequirements> sparseImageMemoryRequirements( sparseMemoryRequirementCount );
+      device.getImageSparseMemoryRequirements( image, &sparseMemoryRequirementCount, sparseImageMemoryRequirements.data() );
+    }
+  }
+  {
+    vk::Device                                     device;
+    vk::Image                                      image;
+    std::vector<vk::SparseImageMemoryRequirements> sparseImageMemoryRequirementss = device.getImageSparseMemoryRequirements( image );
+  }
+  {
+    vk::Device device;
+    vk::Image  image;
+    using Allocator = std::allocator<vk::SparseImageMemoryRequirements>;
+    Allocator                                                 allocator;
+    std::vector<vk::SparseImageMemoryRequirements, Allocator> sparseImageMemoryRequirementss = device.getImageSparseMemoryRequirements( image, allocator );
+  }
+
+  {
+    vk::PhysicalDevice      physicalDevice;
+    vk::Format              format        = {};
+    vk::ImageType           type          = {};
+    vk::SampleCountFlagBits samples       = {};
+    vk::ImageUsageFlags     usage         = {};
+    vk::ImageTiling         tiling        = {};
+    uint32_t                propertyCount = 0;
+    physicalDevice.getSparseImageFormatProperties( format, type, samples, usage, tiling, &propertyCount, nullptr );
+    if ( propertyCount )
+    {
+      std::vector<vk::SparseImageFormatProperties> sparseImageFormatProperties( propertyCount );
+      physicalDevice.getSparseImageFormatProperties( format, type, samples, usage, tiling, &propertyCount, sparseImageFormatProperties.data() );
+    }
+  }
+  {
+    vk::PhysicalDevice                           physicalDevice;
+    vk::Format                                   format  = {};
+    vk::ImageType                                type    = {};
+    vk::SampleCountFlagBits                      samples = {};
+    vk::ImageUsageFlags                          usage   = {};
+    vk::ImageTiling                              tiling  = {};
+    std::vector<vk::SparseImageFormatProperties> sparseImageFormatProperties =
+      physicalDevice.getSparseImageFormatProperties( format, type, samples, usage, tiling );
+  }
+  {
+    vk::PhysicalDevice      physicalDevice;
+    vk::Format              format  = {};
+    vk::ImageType           type    = {};
+    vk::SampleCountFlagBits samples = {};
+    vk::ImageUsageFlags     usage   = {};
+    vk::ImageTiling         tiling  = {};
+    using Allocator                 = std::allocator<vk::SparseImageFormatProperties>;
+    Allocator                                               allocator;
+    std::vector<vk::SparseImageFormatProperties, Allocator> sparseImageFormatProperties =
+      physicalDevice.getSparseImageFormatProperties( format, type, samples, usage, tiling, allocator );
+  }
+
+  {
+    vk::Queue          queue;
+    uint32_t           bindInfoCount = 1;
+    vk::BindSparseInfo bindSparseInfo;
+    vk::Fence          fence;
+    vk::Result         result = queue.bindSparse( bindInfoCount, &bindSparseInfo, fence );
+  }
+
+  {
+    vk::Queue          queue;
+    vk::BindSparseInfo bindSparseInfo;
+    vk::Fence          fence;
+    queue.bindSparse( bindSparseInfo, fence );
+  }
+
+  // Fence commands
+  {
+    vk::Device              device;
+    vk::FenceCreateInfo     fenceCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Fence               fence;
+    vk::Result              result = device.createFence( &fenceCreateInfo, &allocationCallbacks, &fence );
+  }
+  {
+    vk::Device          device;
+    vk::FenceCreateInfo fenceCreateInfo;
+    vk::Fence           fence = device.createFence( fenceCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Fence               fence;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyFence( fence, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Fence  fence;
+    device.destroyFence( fence );
+  }
+  {
+    vk::Device              device;
+    vk::Fence               fence;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( fence, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Fence  fence;
+    device.destroy( fence );
+  }
+
+  {
+    vk::Device device;
+    uint32_t   fenceCount = 1;
+    vk::Fence  fence;
+    vk::Result result = device.resetFences( fenceCount, &fence );
+  }
+  {
+    vk::Device device;
+    vk::Fence  fence;
+    device.resetFences( fence );
+  }
+
+  {
+    vk::Device device;
+    vk::Fence  fence;
+    vk::Result result = device.getFenceStatus( fence );
+  }
+
+  {
+    vk::Device device;
+    uint32_t   fenceCount = 1;
+    vk::Fence  fence;
+    vk::Bool32 waitAll = vk::True;
+    uint64_t   timeout = 1000000000;
+    vk::Result result  = device.waitForFences( fenceCount, &fence, waitAll, timeout );
+  }
+  {
+    vk::Device device;
+    vk::Fence  fence;
+    vk::Bool32 waitAll = vk::True;
+    uint64_t   timeout = 1000000000;
+    vk::Result result  = device.waitForFences( fence, waitAll, timeout );
+  }
+
+  // Queue semaphore commands
+  {
+    vk::Device              device;
+    vk::SemaphoreCreateInfo semaphoreCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Semaphore           semaphore;
+    vk::Result              result = device.createSemaphore( &semaphoreCreateInfo, &allocationCallbacks, &semaphore );
+  }
+  {
+    vk::Device              device;
+    vk::SemaphoreCreateInfo semaphoreCreateInfo;
+    vk::Semaphore           semaphore = device.createSemaphore( semaphoreCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Semaphore           semaphore;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroySemaphore( semaphore, &allocationCallbacks );
+  }
+  {
+    vk::Device    device;
+    vk::Semaphore semaphore;
+    device.destroySemaphore( semaphore );
+  }
+  {
+    vk::Device              device;
+    vk::Semaphore           semaphore;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( semaphore, &allocationCallbacks );
+  }
+  {
+    vk::Device    device;
+    vk::Semaphore semaphore;
+    device.destroy( semaphore );
+  }
+
+  // Query commands
+  {
+    vk::Device              device;
+    vk::QueryPoolCreateInfo queryPoolCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::QueryPool           queryPool;
+    vk::Result              result = device.createQueryPool( &queryPoolCreateInfo, &allocationCallbacks, &queryPool );
+  }
+  {
+    vk::Device              device;
+    vk::QueryPoolCreateInfo queryPoolCreateInfo;
+    vk::QueryPool           queryPool = device.createQueryPool( queryPoolCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::QueryPool           queryPool;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyQueryPool( queryPool, &allocationCallbacks );
+  }
+  {
+    vk::Device    device;
+    vk::QueryPool queryPool;
+    device.destroyQueryPool( queryPool );
+  }
+  {
+    vk::Device              device;
+    vk::QueryPool           queryPool;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( queryPool, &allocationCallbacks );
+  }
+  {
+    vk::Device    device;
+    vk::QueryPool queryPool;
+    device.destroy( queryPool );
+  }
+
+  {
+    vk::Device           device;
+    vk::QueryPool        queryPool;
+    uint32_t             firstQuery = 0;
+    uint32_t             queryCount = 1;
+    size_t               dataSize   = sizeof( uint32_t );
+    uint32_t             data;
+    vk::DeviceSize       stride = 0;
+    vk::QueryResultFlags flags  = {};
+    vk::Result           result = device.getQueryPoolResults( queryPool, firstQuery, queryCount, dataSize, &data, stride, flags );
+  }
+  {
+    vk::Device                             device;
+    vk::QueryPool                          queryPool;
+    uint32_t                               firstQuery  = 0;
+    uint32_t                               queryCount  = 1;
+    size_t                                 dataSize    = sizeof( uint32_t );
+    vk::DeviceSize                         stride      = 0;
+    vk::QueryResultFlags                   flags       = {};
+    vk::ResultValue<std::vector<uint32_t>> resultValue = device.getQueryPoolResults<uint32_t>( queryPool, firstQuery, queryCount, dataSize, stride, flags );
+  }
+  {
+    vk::Device                device;
+    vk::QueryPool             queryPool;
+    uint32_t                  firstQuery  = 0;
+    uint32_t                  queryCount  = 1;
+    vk::DeviceSize            stride      = 0;
+    vk::QueryResultFlags      flags       = {};
+    vk::ResultValue<uint32_t> resultValue = device.getQueryPoolResult<uint32_t>( queryPool, firstQuery, queryCount, stride, flags );
+  }
+
+  // Buffer commands
+  {
+    vk::Device              device;
+    vk::BufferCreateInfo    bufferCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Buffer              buffer;
+    vk::Result              result = device.createBuffer( &bufferCreateInfo, &allocationCallbacks, &buffer );
+  }
+  {
+    vk::Device           device;
+    vk::BufferCreateInfo bufferCreateInfo;
+    vk::Buffer           buffer = device.createBuffer( bufferCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Buffer              buffer;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyBuffer( buffer, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Buffer buffer;
+    device.destroyBuffer( buffer );
+  }
+  {
+    vk::Device              device;
+    vk::Buffer              buffer;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( buffer, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Buffer buffer;
+    device.destroy( buffer );
+  }
+
+  // Image commands
+  {
+    vk::Device              device;
+    vk::ImageCreateInfo     imageCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Image               image;
+    vk::Result              result = device.createImage( &imageCreateInfo, &allocationCallbacks, &image );
+  }
+  {
+    vk::Device          device;
+    vk::ImageCreateInfo imageCreateInfo;
+    vk::Image           image = device.createImage( imageCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Image               image;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyImage( image, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Image  image;
+    device.destroyImage( image );
+  }
+  {
+    vk::Device              device;
+    vk::Image               image;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( image, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Image  image;
+    device.destroy( image );
+  }
+
+  {
+    vk::Device            device;
+    vk::Image             image;
+    vk::ImageSubresource  subresource;
+    vk::SubresourceLayout subresourceLayout;
+    device.getImageSubresourceLayout( image, &subresource, &subresourceLayout );
+  }
+  {
+    vk::Device            device;
+    vk::Image             image;
+    vk::ImageSubresource  subresource;
+    vk::SubresourceLayout subresourceLayout = device.getImageSubresourceLayout( image, subresource );
+  }
+
+  // Image view commands
+  {
+    vk::Device              device;
+    vk::ImageViewCreateInfo imageViewCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::ImageView           imageView;
+    vk::Result              result = device.createImageView( &imageViewCreateInfo, &allocationCallbacks, &imageView );
+  }
+  {
+    vk::Device              device;
+    vk::ImageViewCreateInfo imageViewCreateInfo;
+    vk::ImageView           imageView = device.createImageView( imageViewCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::ImageView           imageView;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyImageView( imageView, &allocationCallbacks );
+  }
+  {
+    vk::Device    device;
+    vk::ImageView imageView;
+    device.destroyImageView( imageView );
+  }
+  {
+    vk::Device              device;
+    vk::ImageView           imageView;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( imageView, &allocationCallbacks );
+  }
+  {
+    vk::Device    device;
+    vk::ImageView imageView;
+    device.destroy( imageView );
+  }
+
+  // Command pool commands
+  {
+    vk::Device                device;
+    vk::CommandPoolCreateInfo commandPoolCreateInfo;
+    vk::AllocationCallbacks   allocationCallbacks;
+    vk::CommandPool           commandPool;
+    vk::Result                result = device.createCommandPool( &commandPoolCreateInfo, &allocationCallbacks, &commandPool );
+  }
+  {
+    vk::Device                device;
+    vk::CommandPoolCreateInfo commandPoolCreateInfo;
+    vk::CommandPool           commandPool = device.createCommandPool( commandPoolCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::CommandPool         commandPool;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyCommandPool( commandPool, &allocationCallbacks );
+  }
+  {
+    vk::Device      device;
+    vk::CommandPool commandPool;
+    device.destroyCommandPool( commandPool );
+  }
+  {
+    vk::Device              device;
+    vk::CommandPool         commandPool;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( commandPool, &allocationCallbacks );
+  }
+  {
+    vk::Device      device;
+    vk::CommandPool commandPool;
+    device.destroy( commandPool );
+  }
+
+  {
+    vk::Device                device;
+    vk::CommandPool           commandPool;
+    vk::CommandPoolResetFlags flags = {};
+    device.resetCommandPool( commandPool, flags );
+  }
+
+  // Command buffer commands
+  {
+    vk::Device                     device;
+    vk::CommandBufferAllocateInfo  commandBufferAllocateInfo;
+    std::vector<vk::CommandBuffer> commandBuffers;
+    vk::Result                     result = device.allocateCommandBuffers( &commandBufferAllocateInfo, commandBuffers.data() );
+  }
+  {
+    vk::Device                     device;
+    vk::CommandBufferAllocateInfo  commandBufferAllocateInfo;
+    std::vector<vk::CommandBuffer> commandBuffers = device.allocateCommandBuffers( commandBufferAllocateInfo );
+  }
+  {
+    vk::Device                    device;
+    vk::CommandBufferAllocateInfo commandBufferAllocateInfo;
+    using Allocator = std::allocator<vk::CommandBuffer>;
+    Allocator                                 allocator;
+    std::vector<vk::CommandBuffer, Allocator> commandBuffers = device.allocateCommandBuffers( commandBufferAllocateInfo, allocator );
+  }
+
+  {
+    vk::Device                     device;
+    vk::CommandPool                commandPool;
+    std::vector<vk::CommandBuffer> commandBuffers;
+    device.freeCommandBuffers( commandPool, static_cast<uint32_t>( commandBuffers.size() ), commandBuffers.data() );
+  }
+  {
+    vk::Device                     device;
+    vk::CommandPool                commandPool;
+    std::vector<vk::CommandBuffer> commandBuffers;
+    device.freeCommandBuffers( commandPool, commandBuffers );
+  }
+  {
+    vk::Device                     device;
+    vk::CommandPool                commandPool;
+    std::vector<vk::CommandBuffer> commandBuffers;
+    device.free( commandPool, static_cast<uint32_t>( commandBuffers.size() ), commandBuffers.data() );
+  }
+  {
+    vk::Device                     device;
+    vk::CommandPool                commandPool;
+    std::vector<vk::CommandBuffer> commandBuffers;
+    device.free( commandPool, commandBuffers );
+  }
+
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::CommandBufferBeginInfo beginInfo;
+    vk::Result                 result = commandBuffer.begin( &beginInfo );
+  }
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::CommandBufferBeginInfo beginInfo;
+    commandBuffer.begin( beginInfo );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    commandBuffer.end();
+  }
+
+  {
+    vk::CommandBuffer           commandBuffer;
+    vk::CommandBufferResetFlags flags = {};
+    commandBuffer.reset( flags );
+  }
+
+  // Command buffer building commands
+  {
+    vk::CommandBuffer           commandBuffer;
+    vk::Buffer                  srcBuffer;
+    vk::Buffer                  dstBuffer;
+    std::vector<vk::BufferCopy> copyRegions;
+    commandBuffer.copyBuffer( srcBuffer, dstBuffer, static_cast<uint32_t>( copyRegions.size() ), copyRegions.data() );
+  }
+  {
+    vk::CommandBuffer           commandBuffer;
+    vk::Buffer                  srcBuffer;
+    vk::Buffer                  dstBuffer;
+    std::vector<vk::BufferCopy> copyRegions;
+    commandBuffer.copyBuffer( srcBuffer, dstBuffer, copyRegions );
+  }
+
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::Image                  srcImage;
+    vk::ImageLayout            srcImageLayout = {};
+    vk::Image                  dstImage;
+    vk::ImageLayout            dstImageLayout = {};
+    std::vector<vk::ImageCopy> regions;
+    commandBuffer.copyImage( srcImage, srcImageLayout, dstImage, dstImageLayout, static_cast<uint32_t>( regions.size() ), regions.data() );
+  }
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::Image                  srcImage;
+    vk::ImageLayout            srcImageLayout = {};
+    vk::Image                  dstImage;
+    vk::ImageLayout            dstImageLayout = {};
+    std::vector<vk::ImageCopy> regions;
+    commandBuffer.copyImage( srcImage, srcImageLayout, dstImage, dstImageLayout, regions );
+  }
+
+  {
+    vk::CommandBuffer                commandBuffer;
+    vk::Buffer                       buffer;
+    vk::Image                        image;
+    vk::ImageLayout                  imageLayout = {};
+    std::vector<vk::BufferImageCopy> regions;
+    commandBuffer.copyBufferToImage( buffer, image, imageLayout, static_cast<uint32_t>( regions.size() ), regions.data() );
+  }
+  {
+    vk::CommandBuffer                commandBuffer;
+    vk::Buffer                       buffer;
+    vk::Image                        image;
+    vk::ImageLayout                  imageLayout = {};
+    std::vector<vk::BufferImageCopy> regions;
+    commandBuffer.copyBufferToImage( buffer, image, imageLayout, regions );
+  }
+
+  {
+    vk::CommandBuffer                commandBuffer;
+    vk::Image                        image;
+    vk::ImageLayout                  imageLayout = {};
+    vk::Buffer                       buffer;
+    std::vector<vk::BufferImageCopy> regions;
+    commandBuffer.copyImageToBuffer( image, imageLayout, buffer, static_cast<uint32_t>( regions.size() ), regions.data() );
+  }
+  {
+    vk::CommandBuffer                commandBuffer;
+    vk::Image                        image;
+    vk::ImageLayout                  imageLayout = {};
+    vk::Buffer                       buffer;
+    std::vector<vk::BufferImageCopy> regions;
+    commandBuffer.copyImageToBuffer( image, imageLayout, buffer, regions );
+  }
+
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::Buffer           dstBuffer;
+    vk::DeviceSize       dstOffset = 0;
+    std::vector<uint8_t> data( 1024 );
+    commandBuffer.updateBuffer( dstBuffer, dstOffset, static_cast<uint32_t>( data.size() ), data.data() );
+  }
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::Buffer           dstBuffer;
+    vk::DeviceSize       dstOffset = 0;
+    std::vector<uint8_t> data( 1024 );
+    commandBuffer.updateBuffer<uint8_t>( dstBuffer, dstOffset, data );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::Buffer        buffer;
+    vk::DeviceSize    offset = 0;
+    vk::DeviceSize    size   = vk::WholeSize;
+    commandBuffer.fillBuffer( buffer, offset, size, 0 );
+  }
+
+  {
+    vk::CommandBuffer                    commandBuffer;
+    vk::PipelineStageFlagBits            srcStageMask    = {};
+    vk::PipelineStageFlagBits            dstStageMask    = {};
+    vk::DependencyFlags                  dependencyFlags = {};
+    std::vector<vk::MemoryBarrier>       memoryBarriers;
+    std::vector<vk::BufferMemoryBarrier> bufferMemoryBarriers;
+    std::vector<vk::ImageMemoryBarrier>  imageMemoryBarriers;
+    commandBuffer.pipelineBarrier( srcStageMask,
+                                   dstStageMask,
+                                   dependencyFlags,
+                                   static_cast<uint32_t>( memoryBarriers.size() ),
+                                   memoryBarriers.data(),
+                                   static_cast<uint32_t>( bufferMemoryBarriers.size() ),
+                                   bufferMemoryBarriers.data(),
+                                   static_cast<uint32_t>( imageMemoryBarriers.size() ),
+                                   imageMemoryBarriers.data() );
+  }
+  {
+    vk::CommandBuffer                    commandBuffer;
+    vk::PipelineStageFlagBits            srcStageMask    = {};
+    vk::PipelineStageFlagBits            dstStageMask    = {};
+    vk::DependencyFlags                  dependencyFlags = {};
+    std::vector<vk::MemoryBarrier>       memoryBarriers;
+    std::vector<vk::BufferMemoryBarrier> bufferMemoryBarriers;
+    std::vector<vk::ImageMemoryBarrier>  imageMemoryBarriers;
+    commandBuffer.pipelineBarrier( srcStageMask, dstStageMask, dependencyFlags, memoryBarriers, bufferMemoryBarriers, imageMemoryBarriers );
+  }
+
+  {
+    vk::CommandBuffer     commandBuffer;
+    vk::QueryPool         queryPool;
+    uint32_t              query = 0;
+    vk::QueryControlFlags flags = {};
+    commandBuffer.beginQuery( queryPool, query, flags );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::QueryPool     queryPool;
+    uint32_t          query = 0;
+    commandBuffer.endQuery( queryPool, query );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::QueryPool     queryPool;
+    uint32_t          firstQuery = 0;
+    uint32_t          queryCount = 1;
+    commandBuffer.resetQueryPool( queryPool, firstQuery, queryCount );
+  }
+
+  {
+    vk::CommandBuffer         commandBuffer;
+    vk::PipelineStageFlagBits stage = {};
+    vk::QueryPool             queryPool;
+    uint32_t                  query = 0;
+    commandBuffer.writeTimestamp( stage, queryPool, query );
+  }
+
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::QueryPool        queryPool;
+    uint32_t             firstQuery = 0;
+    uint32_t             queryCount = 1;
+    vk::Buffer           dstBuffer;
+    vk::DeviceSize       dstOffset = 0;
+    vk::DeviceSize       stride    = 0;
+    vk::QueryResultFlags flags     = {};
+    commandBuffer.copyQueryPoolResults( queryPool, firstQuery, queryCount, dstBuffer, dstOffset, stride, flags );
+  }
+
+  {
+    vk::CommandBuffer              commandBuffer;
+    std::vector<vk::CommandBuffer> secondaryCommandBuffers;
+    commandBuffer.executeCommands( static_cast<uint32_t>( secondaryCommandBuffers.size() ), secondaryCommandBuffers.data() );
+  }
+
+  {
+    vk::CommandBuffer              commandBuffer;
+    std::vector<vk::CommandBuffer> secondaryCommandBuffers;
+    commandBuffer.executeCommands( secondaryCommandBuffers );
+  }
+
+  //=========================================
+  // Vulkan compute API interface definitions
+  //=========================================
+
+  // Event commands
+  {
+    vk::Device              device;
+    vk::EventCreateInfo     eventCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Event               event;
+    vk::Result              result = device.createEvent( &eventCreateInfo, &allocationCallbacks, &event );
+  }
+  {
+    vk::Device          device;
+    vk::EventCreateInfo eventCreateInfo;
+    vk::Event           event = device.createEvent( eventCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Event               event;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyEvent( event, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Event  event;
+    device.destroyEvent( event );
+  }
+  {
+    vk::Device              device;
+    vk::Event               event;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( event, &allocationCallbacks );
+  }
+  {
+    vk::Device device;
+    vk::Event  event;
+    device.destroy( event );
+  }
+
+  {
+    vk::Device device;
+    vk::Event  event;
+    vk::Result result = device.getEventStatus( event );
+  }
+
+  {
+    vk::Device device;
+    vk::Event  event;
+    device.setEvent( event );
+  }
+
+  {
+    vk::Device device;
+    vk::Event  event;
+    device.resetEvent( event );
+  }
+
+  // Buffer view commands
+  {
+    vk::Device               device;
+    vk::BufferViewCreateInfo bufferViewCreateInfo;
+    vk::AllocationCallbacks  allocationCallbacks;
+    vk::BufferView           bufferView;
+    vk::Result               result = device.createBufferView( &bufferViewCreateInfo, &allocationCallbacks, &bufferView );
+  }
+  {
+    vk::Device               device;
+    vk::BufferViewCreateInfo bufferViewCreateInfo;
+    vk::BufferView           bufferView = device.createBufferView( bufferViewCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::BufferView          bufferView;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyBufferView( bufferView, &allocationCallbacks );
+  }
+  {
+    vk::Device     device;
+    vk::BufferView bufferView;
+    device.destroyBufferView( bufferView );
+  }
+  {
+    vk::Device              device;
+    vk::BufferView          bufferView;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( bufferView, &allocationCallbacks );
+  }
+  {
+    vk::Device     device;
+    vk::BufferView bufferView;
+    device.destroy( bufferView );
+  }
+
+  // Shader commands
+  {
+    vk::Device                 device;
+    vk::ShaderModuleCreateInfo shaderModuleCreateInfo;
+    vk::AllocationCallbacks    allocationCallbacks;
+    vk::ShaderModule           shaderModule;
+    vk::Result                 result = device.createShaderModule( &shaderModuleCreateInfo, &allocationCallbacks, &shaderModule );
+  }
+  {
+    vk::Device                 device;
+    vk::ShaderModuleCreateInfo shaderModuleCreateInfo;
+    vk::ShaderModule           shaderModule = device.createShaderModule( shaderModuleCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::ShaderModule        shaderModule;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyShaderModule( shaderModule, &allocationCallbacks );
+  }
+  {
+    vk::Device       device;
+    vk::ShaderModule shaderModule;
+    device.destroyShaderModule( shaderModule );
+  }
+  {
+    vk::Device              device;
+    vk::ShaderModule        shaderModule;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( shaderModule, &allocationCallbacks );
+  }
+  {
+    vk::Device       device;
+    vk::ShaderModule shaderModule;
+    device.destroy( shaderModule );
+  }
+
+  // Pipeline Cache commands
+  {
+    vk::Device                  device;
+    vk::PipelineCacheCreateInfo pipelineCacheCreateInfo;
+    vk::AllocationCallbacks     allocationCallbacks;
+    vk::PipelineCache           pipelineCache;
+    vk::Result                  result = device.createPipelineCache( &pipelineCacheCreateInfo, &allocationCallbacks, &pipelineCache );
+  }
+  {
+    vk::Device                  device;
+    vk::PipelineCacheCreateInfo pipelineCacheCreateInfo;
+    vk::PipelineCache           pipelineCache = device.createPipelineCache( pipelineCacheCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::PipelineCache       pipelineCache;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyPipelineCache( pipelineCache, &allocationCallbacks );
+  }
+  {
+    vk::Device        device;
+    vk::PipelineCache pipelineCache;
+    device.destroyPipelineCache( pipelineCache );
+  }
+  {
+    vk::Device              device;
+    vk::PipelineCache       pipelineCache;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( pipelineCache, &allocationCallbacks );
+  }
+  {
+    vk::Device        device;
+    vk::PipelineCache pipelineCache;
+    device.destroy( pipelineCache );
+  }
+
+  {
+    vk::Device        device;
+    vk::PipelineCache pipelineCache;
+    std::size_t       dataSize = 0;
+    vk::Result        result   = device.getPipelineCacheData( pipelineCache, &dataSize, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<uint8_t> data( dataSize );
+      result = device.getPipelineCacheData( pipelineCache, &dataSize, data.data() );
+    }
+  }
+  {
+    vk::Device           device;
+    vk::PipelineCache    pipelineCache;
+    std::vector<uint8_t> data = device.getPipelineCacheData( pipelineCache );
+  }
+  {
+    vk::Device        device;
+    vk::PipelineCache pipelineCache;
+    using Allocator = std::allocator<uint8_t>;
+    Allocator                       allocator;
+    std::vector<uint8_t, Allocator> data = device.getPipelineCacheData( pipelineCache, allocator );
+  }
+
+  {
+    vk::Device                     device;
+    vk::PipelineCache              dstCache;
+    std::vector<vk::PipelineCache> srcCaches;
+    vk::Result                     result = device.mergePipelineCaches( dstCache, static_cast<uint32_t>( srcCaches.size() ), srcCaches.data() );
+  }
+  {
+    vk::Device                     device;
+    vk::PipelineCache              dstCache;
+    std::vector<vk::PipelineCache> srcCaches;
+    device.mergePipelineCaches( dstCache, srcCaches );
+  }
+
+  // Compute pipeline commands
+  {
+    vk::Device                    device;
+    vk::PipelineCache             pipelineCache;
+    vk::ComputePipelineCreateInfo computePipelineCreateInfo;
+    uint32_t                      pipelineIndex = 0;
+    vk::AllocationCallbacks       allocationCallbacks;
+    vk::Pipeline                  pipeline;
+    vk::Result                    result = device.createComputePipelines( pipelineCache, 1, &computePipelineCreateInfo, &allocationCallbacks, &pipeline );
+  }
+  {
+    vk::Device                                 device;
+    vk::PipelineCache                          pipelineCache;
+    std::vector<vk::ComputePipelineCreateInfo> computePipelineCreateInfos;
+    vk::ResultValue<std::vector<vk::Pipeline>> rv = device.createComputePipelines( pipelineCache, computePipelineCreateInfos );
+  }
+  {
+    vk::Device                                 device;
+    vk::PipelineCache                          pipelineCache;
+    std::vector<vk::ComputePipelineCreateInfo> computePipelineCreateInfos;
+    vk::AllocationCallbacks                    allocationCallbacks;
+    using Allocator = std::allocator<vk::Pipeline>;
+    Allocator                                  allocator;
+    vk::ResultValue<std::vector<vk::Pipeline>> rv = device.createComputePipelines( pipelineCache, computePipelineCreateInfos, allocationCallbacks, allocator );
+  }
+  {
+    vk::Device                    device;
+    vk::PipelineCache             pipelineCache;
+    vk::ComputePipelineCreateInfo computePipelineCreateInfo;
+    vk::ResultValue<vk::Pipeline> rv = device.createComputePipeline( pipelineCache, computePipelineCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Pipeline            pipeline;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyPipeline( pipeline, &allocationCallbacks );
+  }
+  {
+    vk::Device   device;
+    vk::Pipeline pipeline;
+    device.destroyPipeline( pipeline );
+  }
+  {
+    vk::Device              device;
+    vk::Pipeline            pipeline;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( pipeline, &allocationCallbacks );
+  }
+  {
+    vk::Device   device;
+    vk::Pipeline pipeline;
+    device.destroy( pipeline );
+  }
+
+  // Pipeline layout commands
+  {
+    vk::Device                   device;
+    vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo;
+    vk::AllocationCallbacks      allocationCallbacks;
+    vk::PipelineLayout           pipelineLayout;
+    vk::Result                   result = device.createPipelineLayout( &pipelineLayoutCreateInfo, &allocationCallbacks, &pipelineLayout );
+  }
+  {
+    vk::Device                   device;
+    vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo;
+    vk::PipelineLayout           pipelineLayout = device.createPipelineLayout( pipelineLayoutCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::PipelineLayout      pipelineLayout;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyPipelineLayout( pipelineLayout, &allocationCallbacks );
+  }
+  {
+    vk::Device         device;
+    vk::PipelineLayout pipelineLayout;
+    device.destroyPipelineLayout( pipelineLayout );
+  }
+  {
+    vk::Device              device;
+    vk::PipelineLayout      pipelineLayout;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( pipelineLayout, &allocationCallbacks );
+  }
+  {
+    vk::Device         device;
+    vk::PipelineLayout pipelineLayout;
+    device.destroy( pipelineLayout );
+  }
+
+  // Sampler commands
+  {
+    vk::Device              device;
+    vk::SamplerCreateInfo   samplerCreateInfo;
+    vk::AllocationCallbacks allocationCallbacks;
+    vk::Sampler             sampler;
+    vk::Result              result = device.createSampler( &samplerCreateInfo, &allocationCallbacks, &sampler );
+  }
+  {
+    vk::Device            device;
+    vk::SamplerCreateInfo samplerCreateInfo;
+    vk::Sampler           sampler = device.createSampler( samplerCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Sampler             sampler;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroySampler( sampler, &allocationCallbacks );
+  }
+  {
+    vk::Device  device;
+    vk::Sampler sampler;
+    device.destroySampler( sampler );
+  }
+  {
+    vk::Device              device;
+    vk::Sampler             sampler;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( sampler, &allocationCallbacks );
+  }
+  {
+    vk::Device  device;
+    vk::Sampler sampler;
+    device.destroy( sampler );
+  }
+
+  // Descriptor set commands
+  {
+    vk::Device                        device;
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    vk::AllocationCallbacks           allocationCallbacks;
+    vk::DescriptorSetLayout           descriptorSetLayout;
+    vk::Result                        result = device.createDescriptorSetLayout( &descriptorSetLayoutCreateInfo, &allocationCallbacks, &descriptorSetLayout );
+  }
+  {
+    vk::Device                        device;
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    vk::DescriptorSetLayout           descriptorSetLayout = device.createDescriptorSetLayout( descriptorSetLayoutCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::DescriptorSetLayout descriptorSetLayout;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyDescriptorSetLayout( descriptorSetLayout, &allocationCallbacks );
+  }
+  {
+    vk::Device              device;
+    vk::DescriptorSetLayout descriptorSetLayout;
+    device.destroyDescriptorSetLayout( descriptorSetLayout );
+  }
+  {
+    vk::Device              device;
+    vk::DescriptorSetLayout descriptorSetLayout;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( descriptorSetLayout, &allocationCallbacks );
+  }
+  {
+    vk::Device              device;
+    vk::DescriptorSetLayout descriptorSetLayout;
+    device.destroy( descriptorSetLayout );
+  }
+
+  {
+    vk::Device                   device;
+    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo;
+    vk::AllocationCallbacks      allocationCallbacks;
+    vk::DescriptorPool           descriptorPool;
+    vk::Result                   result = device.createDescriptorPool( &descriptorPoolCreateInfo, &allocationCallbacks, &descriptorPool );
+  }
+  {
+    vk::Device                   device;
+    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo;
+    vk::DescriptorPool           descriptorPool = device.createDescriptorPool( descriptorPoolCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::DescriptorPool      descriptorPool;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyDescriptorPool( descriptorPool, &allocationCallbacks );
+  }
+  {
+    vk::Device         device;
+    vk::DescriptorPool descriptorPool;
+    device.destroyDescriptorPool( descriptorPool );
+  }
+  {
+    vk::Device              device;
+    vk::DescriptorPool      descriptorPool;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( descriptorPool, &allocationCallbacks );
+  }
+  {
+    vk::Device         device;
+    vk::DescriptorPool descriptorPool;
+    device.destroy( descriptorPool );
+  }
+
+  {
+    vk::Device                   device;
+    vk::DescriptorPool           descriptorPool;
+    vk::DescriptorPoolResetFlags flags = {};
+    device.resetDescriptorPool( descriptorPool, flags );
+  }
+
+  {
+    vk::Device                    device;
+    vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
+    vk::DescriptorSet             descriptorSet;
+    vk::Result                    result = device.allocateDescriptorSets( &descriptorSetAllocateInfo, &descriptorSet );
+  }
+  {
+    vk::Device                     device;
+    vk::DescriptorSetAllocateInfo  descriptorSetAllocateInfo;
+    std::vector<vk::DescriptorSet> descriptorSets = device.allocateDescriptorSets( descriptorSetAllocateInfo );
+  }
+  {
+    vk::Device                    device;
+    vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo;
+    using DescriptorSetAllocator = std::allocator<vk::DescriptorSet>;
+    DescriptorSetAllocator         descriptorSetAllocator;
+    std::vector<vk::DescriptorSet> descriptorSets = device.allocateDescriptorSets( descriptorSetAllocateInfo, descriptorSetAllocator );
+  }
+
+  {
+    vk::Device                     device;
+    vk::DescriptorPool             descriptorPool;
+    std::vector<vk::DescriptorSet> descriptorSets;
+    vk::Result                     result = device.freeDescriptorSets( descriptorPool, static_cast<uint32_t>( descriptorSets.size() ), descriptorSets.data() );
+  }
+  {
+    vk::Device                     device;
+    vk::DescriptorPool             descriptorPool;
+    std::vector<vk::DescriptorSet> descriptorSets;
+    device.freeDescriptorSets( descriptorPool, descriptorSets );
+  }
+  {
+    vk::Device                     device;
+    vk::DescriptorPool             descriptorPool;
+    std::vector<vk::DescriptorSet> descriptorSets;
+    vk::Result                     result = device.free( descriptorPool, static_cast<uint32_t>( descriptorSets.size() ), descriptorSets.data() );
+  }
+  {
+    vk::Device                     device;
+    vk::DescriptorPool             descriptorPool;
+    std::vector<vk::DescriptorSet> descriptorSets;
+    device.free( descriptorPool, descriptorSets );
+  }
+
+  {
+    vk::Device                          device;
+    std::vector<vk::WriteDescriptorSet> writeDescriptorSets;
+    std::vector<vk::CopyDescriptorSet>  copyDescriptorSets;
+    device.updateDescriptorSets( static_cast<uint32_t>( writeDescriptorSets.size() ),
+                                 writeDescriptorSets.data(),
+                                 static_cast<uint32_t>( copyDescriptorSets.size() ),
+                                 copyDescriptorSets.data() );
+  }
+  {
+    vk::Device                          device;
+    std::vector<vk::WriteDescriptorSet> writeDescriptorSets;
+    std::vector<vk::CopyDescriptorSet>  copyDescriptorSets;
+    device.updateDescriptorSets( writeDescriptorSets, copyDescriptorSets );
+  }
+
+  // Command buffer building commands
+  {
+    vk::CommandBuffer     commandBuffer;
+    vk::PipelineBindPoint pipelineBindPoint = {};
+    vk::Pipeline          pipeline;
+    commandBuffer.bindPipeline( pipelineBindPoint, pipeline );
+  }
+  {
+    vk::CommandBuffer              commandBuffer;
+    vk::PipelineBindPoint          pipelineBindPoint = {};
+    vk::PipelineLayout             pipelineLayout;
+    uint32_t                       firstSet = 0;
+    std::vector<vk::DescriptorSet> descriptorSets;
+    std::vector<uint32_t>          dynamicOffsets;
+    commandBuffer.bindDescriptorSets( pipelineBindPoint,
+                                      pipelineLayout,
+                                      firstSet,
+                                      static_cast<uint32_t>( descriptorSets.size() ),
+                                      descriptorSets.data(),
+                                      static_cast<uint32_t>( dynamicOffsets.size() ),
+                                      dynamicOffsets.data() );
+  }
+  {
+    vk::CommandBuffer              commandBuffer;
+    vk::PipelineBindPoint          pipelineBindPoint = {};
+    vk::PipelineLayout             pipelineLayout;
+    uint32_t                       firstSet = 0;
+    std::vector<vk::DescriptorSet> descriptorSets;
+    std::vector<uint32_t>          dynamicOffsets;
+    commandBuffer.bindDescriptorSets( pipelineBindPoint, pipelineLayout, firstSet, descriptorSets, dynamicOffsets );
+  }
+
+  {
+    vk::CommandBuffer                      commandBuffer;
+    vk::Image                              image;
+    vk::ImageLayout                        imageLayout = {};
+    vk::ClearColorValue                    clearColor  = {};
+    std::vector<vk::ImageSubresourceRange> ranges;
+    commandBuffer.clearColorImage( image, imageLayout, &clearColor, static_cast<uint32_t>( ranges.size() ), ranges.data() );
+  }
+  {
+    vk::CommandBuffer                      commandBuffer;
+    vk::Image                              image;
+    vk::ImageLayout                        imageLayout = {};
+    vk::ClearColorValue                    clearColor  = {};
+    std::vector<vk::ImageSubresourceRange> ranges;
+    commandBuffer.clearColorImage( image, imageLayout, clearColor, ranges );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    uint32_t          groupCountX = 1;
+    uint32_t          groupCountY = 1;
+    uint32_t          groupCountZ = 1;
+    commandBuffer.dispatch( groupCountX, groupCountY, groupCountZ );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::Buffer        buffer;
+    vk::DeviceSize    offset = 0;
+    commandBuffer.dispatchIndirect( buffer, offset );
+  }
+
+  {
+    vk::CommandBuffer      commandBuffer;
+    vk::Event              event;
+    vk::PipelineStageFlags stageMask = {};
+    commandBuffer.setEvent( event, stageMask );
+  }
+
+  {
+    vk::CommandBuffer      commandBuffer;
+    vk::Event              event;
+    vk::PipelineStageFlags stageMask = {};
+    commandBuffer.resetEvent( event, stageMask );
+  }
+
+  {
+    vk::CommandBuffer                    commandBuffer;
+    std::vector<vk::Event>               events;
+    vk::PipelineStageFlags               srcStageMask = {};
+    vk::PipelineStageFlags               dstStageMask = {};
+    std::vector<vk::MemoryBarrier>       memoryBarriers;
+    std::vector<vk::BufferMemoryBarrier> bufferMemoryBarriers;
+    std::vector<vk::ImageMemoryBarrier>  imageMemoryBarriers;
+    commandBuffer.waitEvents( static_cast<uint32_t>( events.size() ),
+                              events.data(),
+                              srcStageMask,
+                              dstStageMask,
+                              static_cast<uint32_t>( memoryBarriers.size() ),
+                              memoryBarriers.data(),
+                              static_cast<uint32_t>( bufferMemoryBarriers.size() ),
+                              bufferMemoryBarriers.data(),
+                              static_cast<uint32_t>( imageMemoryBarriers.size() ),
+                              imageMemoryBarriers.data() );
+  }
+  {
+    vk::CommandBuffer                    commandBuffer;
+    std::vector<vk::Event>               events;
+    vk::PipelineStageFlags               srcStageMask = {};
+    vk::PipelineStageFlags               dstStageMask = {};
+    std::vector<vk::MemoryBarrier>       memoryBarriers;
+    std::vector<vk::BufferMemoryBarrier> bufferMemoryBarriers;
+    std::vector<vk::ImageMemoryBarrier>  imageMemoryBarriers;
+    commandBuffer.waitEvents( events, srcStageMask, dstStageMask, memoryBarriers, bufferMemoryBarriers, imageMemoryBarriers );
+  }
+
+  {
+    vk::CommandBuffer     commandBuffer;
+    vk::PipelineLayout    pipelineLayout;
+    vk::ShaderStageFlags  stageFlags = {};
+    uint32_t              offset     = 0;
+    std::vector<uint32_t> values;
+    commandBuffer.pushConstants( pipelineLayout, stageFlags, offset, static_cast<uint32_t>( values.size() * sizeof( uint32_t ) ), values.data() );
+  }
+  {
+    vk::CommandBuffer     commandBuffer;
+    vk::PipelineLayout    pipelineLayout;
+    vk::ShaderStageFlags  stageFlags = {};
+    uint32_t              offset     = 0;
+    std::vector<uint32_t> values;
+    commandBuffer.pushConstants<uint32_t>( pipelineLayout, stageFlags, offset, values );
+  }
+
+  //==========================================
+  // Vulkan graphics API interface definitions
+  //==========================================
+
+  // Graphics Pipeline commands
+  {
+    vk::Device                                  device;
+    vk::PipelineCache                           pipelineCache;
+    std::vector<vk::GraphicsPipelineCreateInfo> graphicsPipelineCreateInfos;
+    vk::AllocationCallbacks                     allocationCallbacks;
+    std::vector<vk::Pipeline>                   pipelines;
+    vk::Result                                  result = device.createGraphicsPipelines(
+      pipelineCache, static_cast<uint32_t>( graphicsPipelineCreateInfos.size() ), graphicsPipelineCreateInfos.data(), &allocationCallbacks, pipelines.data() );
+  }
+  {
+    vk::Device                                  device;
+    vk::PipelineCache                           pipelineCache;
+    std::vector<vk::GraphicsPipelineCreateInfo> graphicsPipelineCreateInfos;
+    vk::ResultValue<std::vector<vk::Pipeline>>  rv = device.createGraphicsPipelines( pipelineCache, graphicsPipelineCreateInfos );
+  }
+  {
+    vk::Device                                  device;
+    vk::PipelineCache                           pipelineCache;
+    std::vector<vk::GraphicsPipelineCreateInfo> graphicsPipelineCreateInfos;
+    vk::AllocationCallbacks                     allocationCallbacks;
+    using PipelineAllocator = std::allocator<vk::Pipeline>;
+    PipelineAllocator                          pipelineAllocator;
+    vk::ResultValue<std::vector<vk::Pipeline>> rv =
+      device.createGraphicsPipelines( pipelineCache, graphicsPipelineCreateInfos, allocationCallbacks, pipelineAllocator );
+  }
+  {
+    vk::Device                     device;
+    vk::PipelineCache              pipelineCache;
+    vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
+    vk::ResultValue<vk::Pipeline>  rv = device.createGraphicsPipeline( pipelineCache, graphicsPipelineCreateInfo );
+  }
+
+  // Pass commands
+  {
+    vk::Device                device;
+    vk::FramebufferCreateInfo framebufferCreateInfo;
+    vk::AllocationCallbacks   allocationCallbacks;
+    vk::Framebuffer           framebuffer;
+    vk::Result                result = device.createFramebuffer( &framebufferCreateInfo, &allocationCallbacks, &framebuffer );
+  }
+  {
+    vk::Device                device;
+    vk::FramebufferCreateInfo framebufferCreateInfo;
+    vk::Framebuffer           framebuffer = device.createFramebuffer( framebufferCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::Framebuffer         framebuffer;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyFramebuffer( framebuffer, &allocationCallbacks );
+  }
+  {
+    vk::Device      device;
+    vk::Framebuffer framebuffer;
+    device.destroyFramebuffer( framebuffer );
+  }
+  {
+    vk::Device              device;
+    vk::Framebuffer         framebuffer;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( framebuffer, &allocationCallbacks );
+  }
+  {
+    vk::Device      device;
+    vk::Framebuffer framebuffer;
+    device.destroy( framebuffer );
+  }
+
+  {
+    vk::Device               device;
+    vk::RenderPassCreateInfo renderPassCreateInfo;
+    vk::AllocationCallbacks  allocationCallbacks;
+    vk::RenderPass           renderPass;
+    vk::Result               result = device.createRenderPass( &renderPassCreateInfo, &allocationCallbacks, &renderPass );
+  }
+  {
+    vk::Device               device;
+    vk::RenderPassCreateInfo renderPassCreateInfo;
+    vk::RenderPass           renderPass = device.createRenderPass( renderPassCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::RenderPass          renderPass;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyRenderPass( renderPass, &allocationCallbacks );
+  }
+  {
+    vk::Device     device;
+    vk::RenderPass renderPass;
+    device.destroyRenderPass( renderPass );
+  }
+  {
+    vk::Device              device;
+    vk::RenderPass          renderPass;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( renderPass, &allocationCallbacks );
+  }
+  {
+    vk::Device     device;
+    vk::RenderPass renderPass;
+    device.destroy( renderPass );
+  }
+
+  {
+    vk::Device     device;
+    vk::RenderPass renderPass;
+    vk::Extent2D   granularity;
+    device.getRenderAreaGranularity( renderPass, &granularity );
+  }
+  {
+    vk::Device     device;
+    vk::RenderPass renderPass;
+    vk::Extent2D   granularity = device.getRenderAreaGranularity( renderPass );
+  }
+
+  // Command buffer building commands
+  {
+    vk::CommandBuffer         commandBuffer;
+    uint32_t                  firstViewport = 0;
+    std::vector<vk::Viewport> viewports;
+    commandBuffer.setViewport( firstViewport, static_cast<uint32_t>( viewports.size() ), viewports.data() );
+  }
+  {
+    vk::CommandBuffer         commandBuffer;
+    uint32_t                  firstViewport = 0;
+    std::vector<vk::Viewport> viewports;
+    commandBuffer.setViewport( firstViewport, viewports );
+  }
+  {
+    vk::CommandBuffer       commandBuffer;
+    uint32_t                firstScissor = 0;
+    std::vector<vk::Rect2D> scissors;
+    commandBuffer.setScissor( firstScissor, static_cast<uint32_t>( scissors.size() ), scissors.data() );
+  }
+  {
+    vk::CommandBuffer       commandBuffer;
+    uint32_t                firstScissor = 0;
+    std::vector<vk::Rect2D> scissors;
+    commandBuffer.setScissor( firstScissor, scissors );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    float             lineWidth = 1.0f;
+    commandBuffer.setLineWidth( lineWidth );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    float             depthBiasConstantFactor = 0.0f;
+    float             depthBiasClamp          = 0.0f;
+    float             depthBiasSlopeFactor    = 0.0f;
+    commandBuffer.setDepthBias( depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    float             blendConstants[4] = {};
+    commandBuffer.setBlendConstants( blendConstants );
+  }
+  {
+    vk::CommandBuffer    commandBuffer;
+    std::array<float, 4> blendConstants = {};
+    commandBuffer.setBlendConstants( blendConstants.data() );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    float             minDepthBounds = 0.0f;
+    float             maxDepthBounds = 1.0f;
+    commandBuffer.setDepthBounds( minDepthBounds, maxDepthBounds );
+  }
+
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::StencilFaceFlags faceMask    = {};
+    uint32_t             compareMask = 0;
+    commandBuffer.setStencilCompareMask( faceMask, compareMask );
+  }
+
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::StencilFaceFlags faceMask  = {};
+    uint32_t             writeMask = 0;
+    commandBuffer.setStencilWriteMask( faceMask, writeMask );
+  }
+
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::StencilFaceFlags faceMask  = {};
+    int32_t              reference = 0;
+    commandBuffer.setStencilReference( faceMask, reference );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::Buffer        buffer;
+    vk::DeviceSize    offset    = 0;
+    vk::IndexType     indexType = {};
+    commandBuffer.bindIndexBuffer( buffer, offset, indexType );
+  }
+
+  {
+    vk::CommandBuffer           commandBuffer;
+    uint32_t                    firstBinding = 0;
+    std::vector<vk::DeviceSize> offsets;
+    std::vector<vk::Buffer>     buffers;
+    commandBuffer.bindVertexBuffers( firstBinding, static_cast<uint32_t>( buffers.size() ), buffers.data(), offsets.data() );
+  }
+
+  {
+    vk::CommandBuffer           commandBuffer;
+    uint32_t                    firstBinding = 0;
+    std::vector<vk::DeviceSize> offsets;
+    std::vector<vk::Buffer>     buffers;
+    commandBuffer.bindVertexBuffers( firstBinding, buffers, offsets );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    uint32_t          vertexCount   = 3;
+    uint32_t          instanceCount = 1;
+    uint32_t          firstVertex   = 0;
+    uint32_t          firstInstance = 0;
+    commandBuffer.draw( vertexCount, instanceCount, firstVertex, firstInstance );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    uint32_t          indexCount    = 3;
+    uint32_t          instanceCount = 1;
+    uint32_t          firstIndex    = 0;
+    uint32_t          vertexOffset  = 0;
+    uint32_t          firstInstance = 0;
+    commandBuffer.drawIndexed( indexCount, instanceCount, firstIndex, vertexOffset, firstInstance );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::Buffer        buffer;
+    vk::DeviceSize    offset    = 0;
+    uint32_t          drawCount = 1;
+    uint32_t          stride    = 0;
+    commandBuffer.drawIndirect( buffer, offset, drawCount, stride );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::Buffer        buffer;
+    vk::DeviceSize    offset    = 0;
+    uint32_t          drawCount = 1;
+    uint32_t          stride    = 0;
+    commandBuffer.drawIndexedIndirect( buffer, offset, drawCount, stride );
+  }
+
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::Image                  srcImage;
+    vk::ImageLayout            srcImageLayout = {};
+    vk::Image                  dstImage;
+    vk::ImageLayout            dstImageLayout = {};
+    std::vector<vk::ImageBlit> regions;
+    vk::Filter                 filter = {};
+    commandBuffer.blitImage( srcImage, srcImageLayout, dstImage, dstImageLayout, static_cast<uint32_t>( regions.size() ), regions.data(), filter );
+  }
+
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::Image                  srcImage;
+    vk::ImageLayout            srcImageLayout = {};
+    vk::Image                  dstImage;
+    vk::ImageLayout            dstImageLayout = {};
+    std::vector<vk::ImageBlit> regions;
+    vk::Filter                 filter = {};
+    commandBuffer.blitImage( srcImage, srcImageLayout, dstImage, dstImageLayout, regions, filter );
+  }
+
+  {
+    vk::CommandBuffer                      commandBuffer;
+    vk::Image                              image;
+    vk::ImageLayout                        imageLayout       = {};
+    vk::ClearDepthStencilValue             clearDepthStencil = {};
+    std::vector<vk::ImageSubresourceRange> ranges;
+    commandBuffer.clearDepthStencilImage( image, imageLayout, &clearDepthStencil, static_cast<uint32_t>( ranges.size() ), ranges.data() );
+  }
+
+  {
+    vk::CommandBuffer                      commandBuffer;
+    vk::Image                              image;
+    vk::ImageLayout                        imageLayout       = {};
+    vk::ClearDepthStencilValue             clearDepthStencil = {};
+    std::vector<vk::ImageSubresourceRange> ranges;
+    commandBuffer.clearDepthStencilImage( image, imageLayout, clearDepthStencil, ranges );
+  }
+
+  {
+    vk::CommandBuffer                commandBuffer;
+    std::vector<vk::ClearAttachment> clearAttachments;
+    std::vector<vk::ClearRect>       clearRectangles;
+    commandBuffer.clearAttachments(
+      static_cast<uint32_t>( clearAttachments.size() ), clearAttachments.data(), static_cast<uint32_t>( clearRectangles.size() ), clearRectangles.data() );
+  }
+
+  {
+    vk::CommandBuffer                commandBuffer;
+    std::vector<vk::ClearAttachment> clearAttachments;
+    std::vector<vk::ClearRect>       clearRectangles;
+    commandBuffer.clearAttachments( clearAttachments, clearRectangles );
+  }
+
+  {
+    vk::CommandBuffer             commandBuffer;
+    vk::Image                     srcImage;
+    vk::ImageLayout               srcImageLayout = {};
+    vk::Image                     dstImage;
+    vk::ImageLayout               dstImageLayout = {};
+    std::vector<vk::ImageResolve> regions;
+    commandBuffer.resolveImage( srcImage, srcImageLayout, dstImage, dstImageLayout, static_cast<uint32_t>( regions.size() ), regions.data() );
+  }
+
+  {
+    vk::CommandBuffer             commandBuffer;
+    vk::Image                     srcImage;
+    vk::ImageLayout               srcImageLayout = {};
+    vk::Image                     dstImage;
+    vk::ImageLayout               dstImageLayout = {};
+    std::vector<vk::ImageResolve> regions;
+    commandBuffer.resolveImage( srcImage, srcImageLayout, dstImage, dstImageLayout, regions );
+  }
+
+  {
+    vk::CommandBuffer       commandBuffer;
+    vk::RenderPassBeginInfo renderPassBeginInfo;
+    vk::SubpassContents     contents = {};
+    commandBuffer.beginRenderPass( &renderPassBeginInfo, contents );
+  }
+
+  {
+    vk::CommandBuffer       commandBuffer;
+    vk::RenderPassBeginInfo renderPassBeginInfo;
+    vk::SubpassContents     contents = {};
+    commandBuffer.beginRenderPass( renderPassBeginInfo, contents );
+  }
+
+  {
+    vk::CommandBuffer   commandBuffer;
+    vk::SubpassContents contents = {};
+    commandBuffer.nextSubpass( contents );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    commandBuffer.endRenderPass();
+  }
+
+  //==========================================
+  // Vulkan base 1.1 API interface definitions
+  //==========================================
+
+  // Device Initialization
+  {
+    uint32_t   apiVersion;
+    vk::Result result = vk::enumerateInstanceVersion( &apiVersion );
+  }
+  {
+    uint32_t apiVersion = vk::enumerateInstanceVersion();
+  }
+
+  // Promoted from VK_KHR_bind_memory2
+  {
+    vk::Device                            device;
+    std::vector<vk::BindBufferMemoryInfo> bufferMemoryBindInfos;
+    vk::Result result = device.bindBufferMemory2( static_cast<uint32_t>( bufferMemoryBindInfos.size() ), bufferMemoryBindInfos.data() );
+  }
+  {
+    vk::Device                            device;
+    std::vector<vk::BindBufferMemoryInfo> bufferMemoryBindInfos;
+    device.bindBufferMemory2( bufferMemoryBindInfos );
+  }
+
+  {
+    vk::Device                           device;
+    std::vector<vk::BindImageMemoryInfo> imageMemoryBindInfos;
+    vk::Result                           result = device.bindImageMemory2( static_cast<uint32_t>( imageMemoryBindInfos.size() ), imageMemoryBindInfos.data() );
+  }
+  {
+    vk::Device                           device;
+    std::vector<vk::BindImageMemoryInfo> imageMemoryBindInfos;
+    device.bindImageMemory2( imageMemoryBindInfos );
+  }
+
+  // Promoted from VK_KHR_device_group
+  {
+    vk::Device                 device;
+    uint32_t                   heapIndex          = 0;
+    uint32_t                   localDeviceIndex   = 0;
+    uint32_t                   remoteDeviceIndex  = 0;
+    vk::PeerMemoryFeatureFlags peerMemoryFeatures = {};
+    device.getGroupPeerMemoryFeatures( heapIndex, localDeviceIndex, remoteDeviceIndex, &peerMemoryFeatures );
+  }
+  {
+    vk::Device                 device;
+    uint32_t                   heapIndex          = 0;
+    uint32_t                   localDeviceIndex   = 0;
+    uint32_t                   remoteDeviceIndex  = 0;
+    vk::PeerMemoryFeatureFlags peerMemoryFeatures = device.getGroupPeerMemoryFeatures( heapIndex, localDeviceIndex, remoteDeviceIndex );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    uint32_t          deviceMask = 0;
+    commandBuffer.setDeviceMask( deviceMask );
+  }
+
+  // Promoted from VK_KHR_device_group_creation
+  {
+    vk::Instance instance;
+    uint32_t     physicalDeviceGroupCount;
+    vk::Result   result = instance.enumeratePhysicalDeviceGroups( &physicalDeviceGroupCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::PhysicalDeviceGroupProperties> physicalDeviceGroupProperties( physicalDeviceGroupCount );
+      result = instance.enumeratePhysicalDeviceGroups( &physicalDeviceGroupCount, physicalDeviceGroupProperties.data() );
+    }
+  }
+  {
+    vk::Instance                                   instance;
+    std::vector<vk::PhysicalDeviceGroupProperties> physicalDeviceGroupProperties = instance.enumeratePhysicalDeviceGroups();
+  }
+  {
+    vk::Instance                                      instance;
+    std::allocator<vk::PhysicalDeviceGroupProperties> allocator;
+    std::vector<vk::PhysicalDeviceGroupProperties>    physicalDeviceGroupProperties = instance.enumeratePhysicalDeviceGroups( allocator );
+  }
+
+  // Promoted from VK_KHR_get_memory_requirements2
+  {
+    vk::Device                       device;
+    vk::ImageMemoryRequirementsInfo2 imageMemoryRequirementsInfo2;
+    vk::MemoryRequirements2          memoryRequirements2;
+    device.getImageMemoryRequirements2( &imageMemoryRequirementsInfo2, &memoryRequirements2 );
+  }
+  {
+    vk::Device                       device;
+    vk::ImageMemoryRequirementsInfo2 imageMemoryRequirementsInfo2;
+    vk::MemoryRequirements2          memoryRequirements2 = device.getImageMemoryRequirements2( imageMemoryRequirementsInfo2 );
+  }
+  {
+    vk::Device                                                                   device;
+    vk::ImageMemoryRequirementsInfo2                                             imageMemoryRequirementsInfo2;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirements2Chain =
+      device.getImageMemoryRequirements2<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( imageMemoryRequirementsInfo2 );
+  }
+
+  {
+    vk::Device                        device;
+    vk::BufferMemoryRequirementsInfo2 bufferMemoryRequirementsInfo2;
+    vk::MemoryRequirements2           memoryRequirements2;
+    device.getBufferMemoryRequirements2( &bufferMemoryRequirementsInfo2, &memoryRequirements2 );
+  }
+  {
+    vk::Device                        device;
+    vk::BufferMemoryRequirementsInfo2 bufferMemoryRequirementsInfo2;
+    vk::MemoryRequirements2           memoryRequirements2 = device.getBufferMemoryRequirements2( bufferMemoryRequirementsInfo2 );
+  }
+  {
+    vk::Device                                                                   device;
+    vk::BufferMemoryRequirementsInfo2                                            bufferMemoryRequirementsInfo2;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirements2Chain =
+      device.getBufferMemoryRequirements2<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( bufferMemoryRequirementsInfo2 );
+  }
+
+  {
+    vk::Device                             device;
+    vk::ImageSparseMemoryRequirementsInfo2 imageSparseMemoryRequirementsInfo2;
+    uint32_t                               sparseImageMemoryRequirementCount = 0;
+    device.getImageSparseMemoryRequirements2( &imageSparseMemoryRequirementsInfo2, &sparseImageMemoryRequirementCount, nullptr );
+    std::vector<vk::SparseImageMemoryRequirements2> sparseImageMemoryRequirements2( sparseImageMemoryRequirementCount );
+    device.getImageSparseMemoryRequirements2( &imageSparseMemoryRequirementsInfo2, &sparseImageMemoryRequirementCount, sparseImageMemoryRequirements2.data() );
+  }
+  {
+    vk::Device                                      device;
+    vk::ImageSparseMemoryRequirementsInfo2          imageSparseMemoryRequirementsInfo2;
+    std::vector<vk::SparseImageMemoryRequirements2> sparseImageMemoryRequirements2 =
+      device.getImageSparseMemoryRequirements2( imageSparseMemoryRequirementsInfo2 );
+  }
+  {
+    vk::Device                                         device;
+    vk::ImageSparseMemoryRequirementsInfo2             imageSparseMemoryRequirementsInfo2;
+    std::allocator<vk::SparseImageMemoryRequirements2> allocator;
+    std::vector<vk::SparseImageMemoryRequirements2>    sparseImageMemoryRequirements2 =
+      device.getImageSparseMemoryRequirements2( imageSparseMemoryRequirementsInfo2, allocator );
+  }
+
+  // Promoted from VK_KHR_get_physical_device_properties2
+  {
+    vk::PhysicalDevice          physicalDevice;
+    vk::PhysicalDeviceFeatures2 physicalDeviceFeatures2;
+    physicalDevice.getFeatures2( &physicalDeviceFeatures2 );
+  }
+  {
+    vk::PhysicalDevice          physicalDevice;
+    vk::PhysicalDeviceFeatures2 physicalDeviceFeatures2 = physicalDevice.getFeatures2();
+  }
+  {
+    vk::PhysicalDevice                                                                     physicalDevice;
+    vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDevicePrivateDataFeatures> physicalDeviceFeatures2Chain =
+      physicalDevice.getFeatures2<vk::PhysicalDeviceFeatures2, vk::PhysicalDevicePrivateDataFeatures>();
+  }
+
+  {
+    vk::PhysicalDevice            physicalDevice;
+    vk::PhysicalDeviceProperties2 physicalDeviceProperties2;
+    physicalDevice.getProperties2( &physicalDeviceProperties2 );
+  }
+  {
+    vk::PhysicalDevice            physicalDevice;
+    vk::PhysicalDeviceProperties2 physicalDeviceProperties2 = physicalDevice.getProperties2();
+  }
+  {
+    vk::PhysicalDevice                                                                          physicalDevice;
+    vk::StructureChain<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceMultiDrawPropertiesEXT> physicalDeviceProperties2Chain =
+      physicalDevice.getProperties2<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceMultiDrawPropertiesEXT>();
+  }
+
+  {
+    vk::PhysicalDevice    physicalDevice;
+    vk::Format            format = {};
+    vk::FormatProperties2 formatProperties2;
+    physicalDevice.getFormatProperties2( format, &formatProperties2 );
+  }
+  {
+    vk::PhysicalDevice    physicalDevice;
+    vk::Format            format            = {};
+    vk::FormatProperties2 formatProperties2 = physicalDevice.getFormatProperties2( format );
+  }
+  {
+    vk::PhysicalDevice                                               physicalDevice;
+    vk::Format                                                       format = {};
+    vk::StructureChain<vk::FormatProperties2, vk::FormatProperties3> formatProperties2Chain =
+      physicalDevice.getFormatProperties2<vk::FormatProperties2, vk::FormatProperties3>( format );
+  }
+
+  {
+    vk::PhysicalDevice                 physicalDevice;
+    vk::PhysicalDeviceImageFormatInfo2 imageFormatInfo2;
+    vk::ImageFormatProperties2         imageFormatProperties2;
+    vk::Result                         result = physicalDevice.getImageFormatProperties2( &imageFormatInfo2, &imageFormatProperties2 );
+  }
+  {
+    vk::PhysicalDevice                 physicalDevice;
+    vk::PhysicalDeviceImageFormatInfo2 imageFormatInfo2;
+    vk::ImageFormatProperties2         imageFormatProperties2 = physicalDevice.getImageFormatProperties2( imageFormatInfo2 );
+  }
+  {
+    vk::PhysicalDevice                                                                physicalDevice;
+    vk::PhysicalDeviceImageFormatInfo2                                                imageFormatInfo2;
+    vk::StructureChain<vk::ImageFormatProperties2, vk::ExternalImageFormatProperties> imageFormatProperties2Chain =
+      physicalDevice.getImageFormatProperties2<vk::ImageFormatProperties2, vk::ExternalImageFormatProperties>( imageFormatInfo2 );
+  }
+
+  {
+    vk::PhysicalDevice physicalDevice;
+    uint32_t           queueFamilyPropertyCount = 0;
+    physicalDevice.getQueueFamilyProperties2( &queueFamilyPropertyCount, nullptr );
+    std::vector<vk::QueueFamilyProperties2> queueFamilyProperties2( queueFamilyPropertyCount );
+    physicalDevice.getQueueFamilyProperties2( &queueFamilyPropertyCount, queueFamilyProperties2.data() );
+  }
+  {
+    vk::PhysicalDevice                      physicalDevice;
+    std::vector<vk::QueueFamilyProperties2> queueFamilyProperties2 = physicalDevice.getQueueFamilyProperties2();
+  }
+  {
+    vk::PhysicalDevice                         physicalDevice;
+    std::allocator<vk::QueueFamilyProperties2> allocator;
+    std::vector<vk::QueueFamilyProperties2>    queueFamilyProperties2 = physicalDevice.getQueueFamilyProperties2( allocator );
+  }
+  {
+    vk::PhysicalDevice physicalDevice;
+    using QueueFamilyProperties2Chain = vk::StructureChain<vk::QueueFamilyProperties2, vk::QueueFamilyCheckpointProperties2NV>;
+    std::vector<QueueFamilyProperties2Chain> queueFamilyProperties2Chain = physicalDevice.getQueueFamilyProperties2<QueueFamilyProperties2Chain>();
+  }
+  {
+    vk::PhysicalDevice physicalDevice;
+    using QueueFamilyProperties2Chain = vk::StructureChain<vk::QueueFamilyProperties2, vk::QueueFamilyCheckpointProperties2NV>;
+    std::allocator<QueueFamilyProperties2Chain> allocator;
+    std::vector<QueueFamilyProperties2Chain> queueFamilyProperties2Chain = physicalDevice.getQueueFamilyProperties2<QueueFamilyProperties2Chain>( allocator );
+  }
+
+  {
+    vk::PhysicalDevice                  physicalDevice;
+    vk::PhysicalDeviceMemoryProperties2 memoryProperties2;
+    physicalDevice.getMemoryProperties2( &memoryProperties2 );
+  }
+  {
+    vk::PhysicalDevice                  physicalDevice;
+    vk::PhysicalDeviceMemoryProperties2 memoryProperties2 = physicalDevice.getMemoryProperties2();
+  }
+  {
+    vk::PhysicalDevice                                                                                   physicalDevice;
+    vk::StructureChain<vk::PhysicalDeviceMemoryProperties2, vk::PhysicalDeviceMemoryBudgetPropertiesEXT> memoryProperties2Chain =
+      physicalDevice.getMemoryProperties2<vk::PhysicalDeviceMemoryProperties2, vk::PhysicalDeviceMemoryBudgetPropertiesEXT>();
+  }
+
+  {
+    vk::PhysicalDevice                       physicalDevice;
+    vk::PhysicalDeviceSparseImageFormatInfo2 sparseImageFormatInfo2;
+    uint32_t                                 propertyCount = {};
+    physicalDevice.getSparseImageFormatProperties2( &sparseImageFormatInfo2, &propertyCount, nullptr );
+    std::vector<vk::SparseImageFormatProperties2> sparseImageFormatProperties2( propertyCount );
+    physicalDevice.getSparseImageFormatProperties2( &sparseImageFormatInfo2, &propertyCount, sparseImageFormatProperties2.data() );
+  }
+  {
+    vk::PhysicalDevice                            physicalDevice;
+    vk::PhysicalDeviceSparseImageFormatInfo2      sparseImageFormatInfo2;
+    std::vector<vk::SparseImageFormatProperties2> sparseImageFormatProperties2 = physicalDevice.getSparseImageFormatProperties2( sparseImageFormatInfo2 );
+  }
+  {
+    vk::PhysicalDevice                                            physicalDevice;
+    vk::PhysicalDeviceSparseImageFormatInfo2                      sparseImageFormatInfo2;
+    std::vector<vk::SparseImageFormatProperties2>::allocator_type allocator;
+    std::vector<vk::SparseImageFormatProperties2>                 sparseImageFormatProperties2 =
+      physicalDevice.getSparseImageFormatProperties2( sparseImageFormatInfo2, allocator );
+  }
+
+  // Promoted from VK_KHR_maintenance1
+  {
+    vk::Device               device;
+    vk::CommandPool          commandPool;
+    vk::CommandPoolTrimFlags trimFlags = {};
+    device.trimCommandPool( commandPool, trimFlags );
+  }
+
+  // Originally based on VK_KHR_protected_memory
+  {
+    vk::Device           device;
+    vk::DeviceQueueInfo2 queueInfo2;
+    vk::Queue            queue;
+    device.getQueue2( &queueInfo2, &queue );
+  }
+  {
+    vk::Device           device;
+    vk::DeviceQueueInfo2 queueInfo2;
+    vk::Queue            queue = device.getQueue2( queueInfo2 );
+  }
+
+  // Promoted from VK_KHR_external_memory_capabilities
+  {
+    vk::PhysicalDevice                   physicalDevice;
+    vk::PhysicalDeviceExternalBufferInfo externalBufferInfo;
+    vk::ExternalBufferProperties         externalBufferProperties;
+    physicalDevice.getExternalBufferProperties( &externalBufferInfo, &externalBufferProperties );
+  }
+  {
+    vk::PhysicalDevice                   physicalDevice;
+    vk::PhysicalDeviceExternalBufferInfo externalBufferInfo;
+    vk::ExternalBufferProperties         externalBufferProperties = physicalDevice.getExternalBufferProperties( externalBufferInfo );
+  }
+
+  // Promoted from VK_KHR_external_fence_capabilities
+  {
+    vk::PhysicalDevice                  physicalDevice;
+    vk::PhysicalDeviceExternalFenceInfo externalFenceInfo;
+    vk::ExternalFenceProperties         externalFenceProperties;
+    physicalDevice.getExternalFenceProperties( &externalFenceInfo, &externalFenceProperties );
+  }
+  {
+    vk::PhysicalDevice                  physicalDevice;
+    vk::PhysicalDeviceExternalFenceInfo externalFenceInfo;
+    vk::ExternalFenceProperties         externalFenceProperties = physicalDevice.getExternalFenceProperties( externalFenceInfo );
+  }
+
+  // Promoted from VK_KHR_external_semaphore_capabilities
+  {
+    vk::PhysicalDevice                      physicalDevice;
+    vk::PhysicalDeviceExternalSemaphoreInfo externalSemaphoreInfo;
+    vk::ExternalSemaphoreProperties         externalSemaphoreProperties;
+    physicalDevice.getExternalSemaphoreProperties( &externalSemaphoreInfo, &externalSemaphoreProperties );
+  }
+  {
+    vk::PhysicalDevice                      physicalDevice;
+    vk::PhysicalDeviceExternalSemaphoreInfo externalSemaphoreInfo;
+    vk::ExternalSemaphoreProperties         externalSemaphoreProperties = physicalDevice.getExternalSemaphoreProperties( externalSemaphoreInfo );
+  }
+
+  //=============================================
+  // Vulkan compute 1.1 API interface definitions
+  //=============================================
+
+  // Promoted from VK_KHR_device_group
+  {
+    vk::CommandBuffer commandBuffer;
+    uint32_t          baseGroupX  = 0;
+    uint32_t          baseGroupY  = 0;
+    uint32_t          baseGroupZ  = 0;
+    uint32_t          groupCountX = 1;
+    uint32_t          groupCountY = 1;
+    uint32_t          groupCountZ = 1;
+    commandBuffer.dispatchBase( baseGroupX, baseGroupY, baseGroupZ, groupCountX, groupCountY, groupCountZ );
+  }
+
+  // Promoted from VK_KHR_descriptor_update_template
+  {
+    vk::Device                             device;
+    vk::DescriptorUpdateTemplateCreateInfo descriptorUpdateTemplateCreateInfo;
+    vk::AllocationCallbacks                allocationCallbacks;
+    vk::DescriptorUpdateTemplate           descriptorUpdateTemplate;
+    vk::Result result = device.createDescriptorUpdateTemplate( &descriptorUpdateTemplateCreateInfo, &allocationCallbacks, &descriptorUpdateTemplate );
+  }
+  {
+    vk::Device                             device;
+    vk::DescriptorUpdateTemplateCreateInfo descriptorUpdateTemplateCreateInfo;
+    vk::DescriptorUpdateTemplate           descriptorUpdateTemplate = device.createDescriptorUpdateTemplate( descriptorUpdateTemplateCreateInfo );
+  }
+
+  {
+    vk::Device                   device;
+    vk::DescriptorUpdateTemplate descriptorUpdateTemplate;
+    vk::AllocationCallbacks      allocationCallbacks;
+    device.destroyDescriptorUpdateTemplate( descriptorUpdateTemplate, &allocationCallbacks );
+  }
+  {
+    vk::Device                   device;
+    vk::DescriptorUpdateTemplate descriptorUpdateTemplate;
+    device.destroyDescriptorUpdateTemplate( descriptorUpdateTemplate );
+  }
+  {
+    vk::Device                   device;
+    vk::DescriptorUpdateTemplate descriptorUpdateTemplate;
+    vk::AllocationCallbacks      allocationCallbacks;
+    device.destroy( descriptorUpdateTemplate, &allocationCallbacks );
+  }
+  {
+    vk::Device                   device;
+    vk::DescriptorUpdateTemplate descriptorUpdateTemplate;
+    device.destroy( descriptorUpdateTemplate );
+  }
+
+  {
+    vk::Device                   device;
+    vk::DescriptorSet            descriptorSet;
+    vk::DescriptorUpdateTemplate descriptorUpdateTemplate;
+    uint32_t                     data = 0;
+    device.updateDescriptorSetWithTemplate( descriptorSet, descriptorUpdateTemplate, &data );
+  }
+  {
+    vk::Device                   device;
+    vk::DescriptorSet            descriptorSet;
+    vk::DescriptorUpdateTemplate descriptorUpdateTemplate;
+    uint32_t                     data = 0;
+    device.updateDescriptorSetWithTemplate( descriptorSet, descriptorUpdateTemplate, data );
+  }
+
+  // Promoted from VK_KHR_maintenance3
+  {
+    vk::Device                        device;
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    vk::DescriptorSetLayoutSupport    descriptorSetLayoutSupport;
+    device.getDescriptorSetLayoutSupport( &descriptorSetLayoutCreateInfo, &descriptorSetLayoutSupport );
+  }
+  {
+    vk::Device                        device;
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo;
+    vk::DescriptorSetLayoutSupport    descriptorSetLayoutSupport = device.getDescriptorSetLayoutSupport( descriptorSetLayoutCreateInfo );
+  }
+  {
+    vk::Device                                                                                                device;
+    vk::DescriptorSetLayoutCreateInfo                                                                         descriptorSetLayoutCreateInfo;
+    vk::StructureChain<vk::DescriptorSetLayoutSupport, vk::DescriptorSetVariableDescriptorCountLayoutSupport> descriptorSetLayoutSupportChain =
+      device.getDescriptorSetLayoutSupport<vk::DescriptorSetLayoutSupport, vk::DescriptorSetVariableDescriptorCountLayoutSupport>(
+        descriptorSetLayoutCreateInfo );
+  }
+
+  // Promoted from VK_KHR_sampler_ycbcr_conversion
+  {
+    vk::Device                           device;
+    vk::SamplerYcbcrConversionCreateInfo samplerYcbcrConversionCreateInfo;
+    vk::AllocationCallbacks              allocationCallbacks;
+    vk::SamplerYcbcrConversion           samplerYcbcrConversion;
+    vk::Result result = device.createSamplerYcbcrConversion( &samplerYcbcrConversionCreateInfo, &allocationCallbacks, &samplerYcbcrConversion );
+  }
+  {
+    vk::Device                           device;
+    vk::SamplerYcbcrConversionCreateInfo samplerYcbcrConversionCreateInfo;
+    vk::SamplerYcbcrConversion           samplerYcbcrConversion = device.createSamplerYcbcrConversion( samplerYcbcrConversionCreateInfo );
+  }
+
+  {
+    vk::Device                 device;
+    vk::SamplerYcbcrConversion samplerYcbcrConversion;
+    vk::AllocationCallbacks    allocationCallbacks;
+    device.destroySamplerYcbcrConversion( samplerYcbcrConversion, &allocationCallbacks );
+  }
+  {
+    vk::Device                 device;
+    vk::SamplerYcbcrConversion samplerYcbcrConversion;
+    device.destroySamplerYcbcrConversion( samplerYcbcrConversion );
+  }
+  {
+    vk::Device                 device;
+    vk::SamplerYcbcrConversion samplerYcbcrConversion;
+    vk::AllocationCallbacks    allocationCallbacks;
+    device.destroy( samplerYcbcrConversion, &allocationCallbacks );
+  }
+  {
+    vk::Device                 device;
+    vk::SamplerYcbcrConversion samplerYcbcrConversion;
+    device.destroy( samplerYcbcrConversion );
+  }
+
+  //==========================================
+  // Vulkan base 1.2 API interface definitions
+  //==========================================
+
+  // Promoted from VK_EXT_host_query_reset
+  {
+    vk::Device    device;
+    vk::QueryPool queryPool;
+    uint32_t      firstQuery = 0;
+    uint32_t      queryCount = 1;
+    device.resetQueryPool( queryPool, firstQuery, queryCount );
+  }
+
+  // Promoted from VK_KHR_timeline_semaphore
+  {
+    vk::Device    device;
+    vk::Semaphore semaphore;
+    uint64_t      value  = {};
+    vk::Result    result = device.getSemaphoreCounterValue( semaphore, &value );
+  }
+  {
+    vk::Device    device;
+    vk::Semaphore semaphore;
+    uint64_t      value = device.getSemaphoreCounterValue( semaphore );
+  }
+
+  {
+    vk::Device            device;
+    vk::SemaphoreWaitInfo waitInfo;
+    uint64_t              timeout = {};
+    vk::Result            result  = device.waitSemaphores( &waitInfo, timeout );
+  }
+  {
+    vk::Device            device;
+    vk::SemaphoreWaitInfo waitInfo;
+    uint64_t              timeout = {};
+    vk::Result            result  = device.waitSemaphores( waitInfo, timeout );
+  }
+
+  {
+    vk::Device              device;
+    vk::SemaphoreSignalInfo signalInfo;
+    vk::Result              result = device.signalSemaphore( &signalInfo );
+  }
+  {
+    vk::Device              device;
+    vk::SemaphoreSignalInfo signalInfo;
+    device.signalSemaphore( signalInfo );
+  }
+
+  // Promoted from VK_KHR_buffer_device_address
+  {
+    vk::Device                  device;
+    vk::BufferDeviceAddressInfo addressInfo;
+    vk::DeviceAddress           address = device.getBufferAddress( &addressInfo );
+  }
+  {
+    vk::Device                  device;
+    vk::BufferDeviceAddressInfo addressInfo;
+    vk::DeviceAddress           address = device.getBufferAddress( addressInfo );
+  }
+
+  {
+    vk::Device                  device;
+    vk::BufferDeviceAddressInfo addressInfo;
+    uint64_t                    address = device.getBufferOpaqueCaptureAddress( &addressInfo );
+  }
+  {
+    vk::Device                  device;
+    vk::BufferDeviceAddressInfo addressInfo;
+    uint64_t                    address = device.getBufferOpaqueCaptureAddress( addressInfo );
+  }
+
+  {
+    vk::Device                               device;
+    vk::DeviceMemoryOpaqueCaptureAddressInfo addressInfo;
+    uint64_t                                 address = device.getMemoryOpaqueCaptureAddress( &addressInfo );
+  }
+  {
+    vk::Device                               device;
+    vk::DeviceMemoryOpaqueCaptureAddressInfo addressInfo;
+    uint64_t                                 address = device.getMemoryOpaqueCaptureAddress( addressInfo );
+  }
+
+  //==============================================
+  // Vulkan graphics 1.2 API interface definitions
+  //==============================================
+
+  // Promoted from VK_KHR_draw_indirect_count
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::Buffer        buffer;
+    vk::DeviceSize    offset = 0;
+    vk::Buffer        countBuffer;
+    vk::DeviceSize    countBufferOffset = 0;
+    uint32_t          maxDrawCount      = 1;
+    uint32_t          stride            = 0;
+    commandBuffer.drawIndirectCount( buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::Buffer        buffer;
+    vk::DeviceSize    offset = 0;
+    vk::Buffer        countBuffer;
+    vk::DeviceSize    countBufferOffset = 0;
+    uint32_t          maxDrawCount      = 1;
+    uint32_t          stride            = 0;
+    commandBuffer.drawIndexedIndirectCount( buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride );
+  }
+
+  // Promoted from VK_KHR_create_renderpass2
+  {
+    vk::Device                device;
+    vk::RenderPassCreateInfo2 renderPassCreateInfo2;
+    vk::AllocationCallbacks   allocationCallbacks;
+    vk::RenderPass            renderPass;
+    vk::Result                result = device.createRenderPass2( &renderPassCreateInfo2, &allocationCallbacks, &renderPass );
+  }
+  {
+    vk::Device                device;
+    vk::RenderPassCreateInfo2 renderPassCreateInfo2;
+    vk::RenderPass            renderPass = device.createRenderPass2( renderPassCreateInfo2 );
+  }
+  {
+    vk::Device                device;
+    vk::RenderPassCreateInfo2 renderPassCreateInfo2;
+    vk::UniqueRenderPass      renderPass = device.createRenderPass2Unique( renderPassCreateInfo2 );
+  }
+
+  {
+    vk::CommandBuffer       commandBuffer;
+    vk::RenderPassBeginInfo renderPassBeginInfo;
+    vk::SubpassBeginInfo    subpassBeginInfo;
+    commandBuffer.beginRenderPass2( &renderPassBeginInfo, &subpassBeginInfo );
+  }
+  {
+    vk::CommandBuffer       commandBuffer;
+    vk::RenderPassBeginInfo renderPassBeginInfo;
+    vk::SubpassBeginInfo    subpassBeginInfo;
+    commandBuffer.beginRenderPass2( renderPassBeginInfo, subpassBeginInfo );
+  }
+
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::SubpassBeginInfo subpassBeginInfo;
+    vk::SubpassEndInfo   subpassEndInfo;
+    commandBuffer.nextSubpass2( &subpassBeginInfo, &subpassEndInfo );
+  }
+  {
+    vk::CommandBuffer    commandBuffer;
+    vk::SubpassBeginInfo subpassBeginInfo;
+    vk::SubpassEndInfo   subpassEndInfo;
+    commandBuffer.nextSubpass2( subpassBeginInfo, subpassEndInfo );
+  }
+
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::SubpassEndInfo subpassEndInfo;
+    commandBuffer.endRenderPass2( &subpassEndInfo );
+  }
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::SubpassEndInfo subpassEndInfo;
+    commandBuffer.endRenderPass2( subpassEndInfo );
+  }
+
+  //==========================================
+  // Vulkan base 1.3 API interface definitions
+  //==========================================
+
+  // Promoted from VK_EXT_tooling_info
+  {
+    vk::PhysicalDevice physicalDevice;
+    uint32_t           toolCount = 0;
+    vk::Result         result    = physicalDevice.getToolProperties( &toolCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::PhysicalDeviceToolProperties> toolProperties( toolCount );
+      result = physicalDevice.getToolProperties( &toolCount, toolProperties.data() );
+    }
+  }
+  {
+    vk::PhysicalDevice                            physicalDevice;
+    std::vector<vk::PhysicalDeviceToolProperties> toolProperties = physicalDevice.getToolProperties();
+  }
+  {
+    vk::PhysicalDevice                               physicalDevice;
+    std::allocator<vk::PhysicalDeviceToolProperties> allocator;
+    std::vector<vk::PhysicalDeviceToolProperties>    toolProperties = physicalDevice.getToolProperties( allocator );
+  }
+
+  // Promoted from VK_EXT_private_data
+  {
+    vk::Device                    device;
+    vk::PrivateDataSlotCreateInfo privateDataSlotCreateInfo;
+    vk::AllocationCallbacks       allocationCallbacks;
+    vk::PrivateDataSlot           privateDataSlot;
+    vk::Result                    result = device.createPrivateDataSlot( &privateDataSlotCreateInfo, &allocationCallbacks, &privateDataSlot );
+  }
+  {
+    vk::Device                    device;
+    vk::PrivateDataSlotCreateInfo privateDataSlotCreateInfo;
+    vk::PrivateDataSlot           privateDataSlot = device.createPrivateDataSlot( privateDataSlotCreateInfo );
+  }
+  {
+    vk::Device                    device;
+    vk::PrivateDataSlotCreateInfo privateDataSlotCreateInfo;
+    vk::UniquePrivateDataSlot     privateDataSlot = device.createPrivateDataSlotUnique( privateDataSlotCreateInfo );
+  }
+
+  {
+    vk::Device              device;
+    vk::PrivateDataSlot     privateDataSlot;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroyPrivateDataSlot( privateDataSlot, &allocationCallbacks );
+  }
+  {
+    vk::Device          device;
+    vk::PrivateDataSlot privateDataSlot;
+    device.destroyPrivateDataSlot( privateDataSlot );
+  }
+  {
+    vk::Device              device;
+    vk::PrivateDataSlot     privateDataSlot;
+    vk::AllocationCallbacks allocationCallbacks;
+    device.destroy( privateDataSlot, &allocationCallbacks );
+  }
+  {
+    vk::Device          device;
+    vk::PrivateDataSlot privateDataSlot;
+    device.destroy( privateDataSlot );
+  }
+
+  {
+    vk::Device          device;
+    vk::ObjectType      objectType   = {};
+    uint64_t            objectHandle = {};
+    vk::PrivateDataSlot privateDataSlot;
+    uint64_t            data = {};
+    device.setPrivateData( objectType, objectHandle, privateDataSlot, data );
+  }
+
+  {
+    vk::Device          device;
+    vk::ObjectType      objectType   = {};
+    uint64_t            objectHandle = {};
+    vk::PrivateDataSlot privateDataSlot;
+    uint64_t            data = {};
+    device.getPrivateData( objectType, objectHandle, privateDataSlot, &data );
+  }
+  {
+    vk::Device          device;
+    vk::ObjectType      objectType   = {};
+    uint64_t            objectHandle = {};
+    vk::PrivateDataSlot privateDataSlot;
+    uint64_t            data = device.getPrivateData( objectType, objectHandle, privateDataSlot );
+  }
+
+  // Promoted from VK_KHR_synchronization2
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::DependencyInfo dependencyInfo;
+    commandBuffer.pipelineBarrier2( &dependencyInfo );
+  }
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::DependencyInfo dependencyInfo;
+    commandBuffer.pipelineBarrier2( dependencyInfo );
+  }
+
+  {
+    vk::CommandBuffer       commandBuffer;
+    vk::PipelineStageFlags2 stage = {};
+    vk::QueryPool           queryPool;
+    uint32_t                query = 0;
+    commandBuffer.writeTimestamp2( stage, queryPool, query );
+  }
+
+  {
+    vk::Queue                    queue;
+    std::vector<vk::SubmitInfo2> submitInfos;
+    vk::Fence                    fence;
+    vk::Result                   result = queue.submit2( static_cast<uint32_t>( submitInfos.size() ), submitInfos.data(), fence );
+  }
+  {
+    vk::Queue                    queue;
+    std::vector<vk::SubmitInfo2> submitInfos;
+    vk::Fence                    fence;
+    queue.submit2( submitInfos, fence );
+  }
+
+  // Promoted from VK_KHR_copy_commands2
+  {
+    vk::CommandBuffer   commandBuffer;
+    vk::CopyBufferInfo2 copyBufferInfo2;
+    commandBuffer.copyBuffer2( &copyBufferInfo2 );
+  }
+  {
+    vk::CommandBuffer   commandBuffer;
+    vk::CopyBufferInfo2 copyBufferInfo2;
+    commandBuffer.copyBuffer2( copyBufferInfo2 );
+  }
+
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::CopyImageInfo2 copyImageInfo2;
+    commandBuffer.copyImage2( &copyImageInfo2 );
+  }
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::CopyImageInfo2 copyImageInfo2;
+    commandBuffer.copyImage2( copyImageInfo2 );
+  }
+
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::CopyBufferToImageInfo2 copyBufferToImageInfo2;
+    commandBuffer.copyBufferToImage2( &copyBufferToImageInfo2 );
+  }
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::CopyBufferToImageInfo2 copyBufferToImageInfo2;
+    commandBuffer.copyBufferToImage2( copyBufferToImageInfo2 );
+  }
+
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::CopyImageToBufferInfo2 copyImageToBufferInfo2;
+    commandBuffer.copyImageToBuffer2( &copyImageToBufferInfo2 );
+  }
+  {
+    vk::CommandBuffer          commandBuffer;
+    vk::CopyImageToBufferInfo2 copyImageToBufferInfo2;
+    commandBuffer.copyImageToBuffer2( copyImageToBufferInfo2 );
+  }
+
+  // Promoted from VK_KHR_maintenance4
+  {
+    vk::Device                         device;
+    vk::DeviceBufferMemoryRequirements bufferMemoryRequirements;
+    vk::MemoryRequirements2            memoryRequirements;
+    device.getBufferMemoryRequirements( &bufferMemoryRequirements, &memoryRequirements );
+  }
+  {
+    vk::Device                         device;
+    vk::DeviceBufferMemoryRequirements bufferMemoryRequirements;
+    vk::MemoryRequirements2            memoryRequirements = device.getBufferMemoryRequirements( bufferMemoryRequirements );
+  }
+  {
+    vk::Device                                                                   device;
+    vk::DeviceBufferMemoryRequirements                                           bufferMemoryRequirements;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirementsChain =
+      device.getBufferMemoryRequirements<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( bufferMemoryRequirements );
+  }
+
+  {
+    vk::Device                        device;
+    vk::DeviceImageMemoryRequirements imageMemoryRequirements;
+    vk::MemoryRequirements2           memoryRequirements;
+    device.getImageMemoryRequirements( &imageMemoryRequirements, &memoryRequirements );
+  }
+  {
+    vk::Device                        device;
+    vk::DeviceImageMemoryRequirements imageMemoryRequirements;
+    vk::MemoryRequirements2           memoryRequirements = device.getImageMemoryRequirements( imageMemoryRequirements );
+  }
+  {
+    vk::Device                                                                   device;
+    vk::DeviceImageMemoryRequirements                                            imageMemoryRequirements;
+    vk::StructureChain<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements> memoryRequirementsChain =
+      device.getImageMemoryRequirements<vk::MemoryRequirements2, vk::MemoryDedicatedRequirements>( imageMemoryRequirements );
+  }
+
+  {
+    vk::Device                        device;
+    vk::DeviceImageMemoryRequirements imageMemoryRequirements;
+    uint32_t                          sparseMemoryRequirementCount = 0;
+    device.getImageSparseMemoryRequirements( &imageMemoryRequirements, &sparseMemoryRequirementCount, nullptr );
+    std::vector<vk::SparseImageMemoryRequirements2> sparseImageMemoryRequirements( sparseMemoryRequirementCount );
+    device.getImageSparseMemoryRequirements( &imageMemoryRequirements, &sparseMemoryRequirementCount, sparseImageMemoryRequirements.data() );
+  }
+  {
+    vk::Device                                      device;
+    vk::DeviceImageMemoryRequirements               imageMemoryRequirements;
+    std::vector<vk::SparseImageMemoryRequirements2> sparseImageMemoryRequirements = device.getImageSparseMemoryRequirements( imageMemoryRequirements );
+  }
+  {
+    vk::Device                        device;
+    vk::DeviceImageMemoryRequirements imageMemoryRequirements;
+    using Allocator = std::allocator<vk::SparseImageMemoryRequirements2>;
+    Allocator                                                  allocator;
+    std::vector<vk::SparseImageMemoryRequirements2, Allocator> sparseImageMemoryRequirements =
+      device.getImageSparseMemoryRequirements( imageMemoryRequirements, allocator );
+  }
+
+  //=============================================
+  // Vulkan compute 1.3 API interface definitions
+  //=============================================
+
+  // Promoted from VK_KHR_synchronization2
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::Event          event;
+    vk::DependencyInfo dependencyInfo;
+    commandBuffer.setEvent2( event, &dependencyInfo );
+  }
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::Event          event;
+    vk::DependencyInfo dependencyInfo;
+    commandBuffer.setEvent2( event, dependencyInfo );
+  }
+
+  {
+    vk::CommandBuffer       commandBuffer;
+    vk::Event               event;
+    vk::PipelineStageFlags2 stage = {};
+    commandBuffer.resetEvent2( event, stage );
+  }
+
+  {
+    vk::CommandBuffer               commandBuffer;
+    std::vector<vk::Event>          events;
+    std::vector<vk::DependencyInfo> depdencyInfos;
+    commandBuffer.waitEvents2( static_cast<uint32_t>( events.size() ), events.data(), depdencyInfos.data() );
+  }
+  {
+    vk::CommandBuffer               commandBuffer;
+    std::vector<vk::Event>          events;
+    std::vector<vk::DependencyInfo> depdencyInfos;
+    commandBuffer.waitEvents2( events, depdencyInfos );
+  }
+
+  //==============================================
+  // Vulkan graphics 1.3 API interface definitions
+  //==============================================
+
+  // Promoted from VK_KHR_copy_commands2
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::BlitImageInfo2 blitImageInfo2;
+    commandBuffer.blitImage2( &blitImageInfo2 );
+  }
+  {
+    vk::CommandBuffer  commandBuffer;
+    vk::BlitImageInfo2 blitImageInfo2;
+    commandBuffer.blitImage2( blitImageInfo2 );
+  }
+
+  {
+    vk::CommandBuffer     commandBuffer;
+    vk::ResolveImageInfo2 resolveImageInfo2;
+    commandBuffer.resolveImage2( &resolveImageInfo2 );
+  }
+  {
+    vk::CommandBuffer     commandBuffer;
+    vk::ResolveImageInfo2 resolveImageInfo2;
+    commandBuffer.resolveImage2( resolveImageInfo2 );
+  }
+
+  // Promoted from VK_KHR_dynamic_rendering
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::RenderingInfo renderingInfo;
+    commandBuffer.beginRendering( &renderingInfo );
+  }
+  {
+    vk::CommandBuffer commandBuffer;
+    vk::RenderingInfo renderingInfo;
+    commandBuffer.beginRendering( renderingInfo );
+  }
+
+  {
+    vk::CommandBuffer commandBuffer;
+    commandBuffer.endRendering();
+  }
+
+#if 0
+  {
+    vk::PhysicalDevice physicalDevice;
+    vk::SurfaceKHR     surface;
+    vk::Bool32         supported;
+    uint32_t           queueFamilyIndex;
+    vk::Result         result = physicalDevice.getSurfaceSupportKHR( queueFamilyIndex, surface, &supported );
+  }
+  {
+    vk::PhysicalDevice physicalDevice;
+    vk::SurfaceKHR     surface;
+    uint32_t           queueFamilyIndex;
+    vk::Bool32         supported = physicalDevice.getSurfaceSupportKHR( queueFamilyIndex, surface );
+  }
+  {
+    vk::PhysicalDevice physicalDevice;
+    vk::SurfaceKHR     surface;
+    uint32_t           formatCount;
+    vk::Result         result = physicalDevice.getSurfaceFormatsKHR( surface, &formatCount, nullptr );
+    if ( result == vk::Result::eSuccess )
+    {
+      std::vector<vk::SurfaceFormatKHR> formats( formatCount );
+      result = physicalDevice.getSurfaceFormatsKHR( surface, &formatCount, formats.data() );
+    }
+  }
+  {
+    vk::PhysicalDevice                physicalDevice;
+    vk::SurfaceKHR                    surface;
+    std::vector<vk::SurfaceFormatKHR> formats = physicalDevice.getSurfaceFormatsKHR( surface );
+  }
+  {
+    vk::PhysicalDevice                   physicalDevice;
+    vk::SurfaceKHR                       surface;
+    std::allocator<vk::SurfaceFormatKHR> allocator;
+    std::vector<vk::SurfaceFormatKHR>    formats = physicalDevice.getSurfaceFormatsKHR( surface, allocator );
+  }
+#endif
+
+  return 0;
+}

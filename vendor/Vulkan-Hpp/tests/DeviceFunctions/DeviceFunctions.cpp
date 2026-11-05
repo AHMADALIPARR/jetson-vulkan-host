@@ -1,0 +1,110 @@
+// SPDX-FileCopyrightText: 2018-2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+// VulkanHpp Tests : DeviceFunctions
+//                   Compile test on device functions
+
+// ignore warning 4189: local variable is initialized but not referenced
+#if defined( _MSC_VER )
+#  pragma warning( disable : 4189 )
+#elif defined( __GNUC__ )
+#  pragma GCC diagnostic ignored "-Wunused-variable"
+#else
+// unknow compiler... just ignore the warnings for yourselves ;)
+#endif
+
+#include "../test_macros.hpp"
+#ifdef VULKAN_HPP_USE_CXX_MODULE
+#  include <cstdint>
+#  include <vulkan/vulkan_hpp_macros.hpp>  // VULKAN_HPP_DISPATCH_LOADER_DYNAMIC_TYPE
+import vulkan;
+#else
+#  include <algorithm>
+#  include <cstdint>
+#  include <iostream>
+#  include <vector>
+#  include <vulkan/vulkan.hpp>
+#endif
+
+static char const * AppName    = "DeviceFunctions";
+static char const * EngineName = "Vulkan.hpp";
+
+template <class Dispatch = VULKAN_HPP_DEFAULT_DISPATCHER_TYPE, class Alloc = std::allocator<vk::UniqueHandle<vk::CommandBuffer, Dispatch>>>
+
+std::vector<vk::UniqueHandle<vk::CommandBuffer, Dispatch>, Alloc> createCommandBuffers( const vk::Device &                    device,
+                                                                                        const vk::CommandBufferAllocateInfo & allocateInfo,
+                                                                                        const Alloc &                         alloc = Alloc(),
+                                                                                        const Dispatch & d = VULKAN_HPP_DEFAULT_DISPATCHER )
+{
+  return device.allocateCommandBuffersUnique( allocateInfo, alloc, d );
+}
+
+int main()
+{
+  try
+  {
+    vk::ApplicationInfo appInfo( AppName, 1, EngineName, 1, vk::ApiVersion11 );
+    vk::UniqueInstance  instance       = vk::createInstanceUnique( vk::InstanceCreateInfo( {}, &appInfo ) );
+    vk::PhysicalDevice  physicalDevice = instance->enumeratePhysicalDevices().front();
+
+    uint32_t propertyCount;
+    physicalDevice.getQueueFamilyProperties( &propertyCount, nullptr );
+
+    // get the QueueFamilyProperties of the first PhysicalDevice
+    std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+
+    // get the first index into queueFamiliyProperties which supports graphics
+    std::size_t graphicsQueueFamilyIndex =
+      std::distance( queueFamilyProperties.begin(),
+                     std::find_if( queueFamilyProperties.begin(),
+                                   queueFamilyProperties.end(),
+                                   []( vk::QueueFamilyProperties const & qfp ) { return qfp.queueFlags & vk::QueueFlagBits::eGraphics; } ) );
+    release_assert( graphicsQueueFamilyIndex < queueFamilyProperties.size() );
+
+    // create a UniqueDevice
+    float                     queuePriority = 0.0f;
+    vk::DeviceQueueCreateInfo deviceQueueCreateInfo( vk::DeviceQueueCreateFlags(), static_cast<uint32_t>( graphicsQueueFamilyIndex ), 1, &queuePriority );
+    vk::UniqueDevice          device = physicalDevice.createDeviceUnique( vk::DeviceCreateInfo( vk::DeviceCreateFlags(), deviceQueueCreateInfo ) );
+
+    uint64_t handle = device->getAccelerationStructureHandleNV<uint8_t>( {}, VULKAN_HPP_DISPATCH_LOADER_DYNAMIC_TYPE() );
+
+    std::vector<vk::UniqueCommandBuffer>::allocator_type vectorAllocator;
+    vk::UniqueCommandBuffer                              commandBuffer =
+      std::move( device->allocateCommandBuffersUnique( {}, vectorAllocator, VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE() ).front() );
+
+    std::vector<vk::UniqueCommandBuffer> uniqueCommandBuffers;
+    uniqueCommandBuffers = createCommandBuffers( device.get(), {}, uniqueCommandBuffers.get_allocator(), VULKAN_HPP_DISPATCH_LOADER_STATIC_TYPE() );
+    commandBuffer        = std::move( uniqueCommandBuffers.front() );
+
+    commandBuffer->begin( vk::CommandBufferBeginInfo() );
+
+    std::vector<vk::UniqueHandle<vk::CommandBuffer, VULKAN_HPP_DISPATCH_LOADER_DYNAMIC_TYPE>>::allocator_type dynamicVectorAllocator;
+    vk::UniqueHandle<vk::CommandBuffer, VULKAN_HPP_DISPATCH_LOADER_DYNAMIC_TYPE>                              dynamicCommandBuffer =
+      std::move( device->allocateCommandBuffersUnique( {}, dynamicVectorAllocator, VULKAN_HPP_DISPATCH_LOADER_DYNAMIC_TYPE() ).front() );
+
+    std::vector<vk::UniqueHandle<vk::CommandBuffer, VULKAN_HPP_DISPATCH_LOADER_DYNAMIC_TYPE>> dynamicUniqueCommandBuffers;
+    dynamicUniqueCommandBuffers =
+      createCommandBuffers( device.get(), {}, dynamicUniqueCommandBuffers.get_allocator(), VULKAN_HPP_DISPATCH_LOADER_DYNAMIC_TYPE() );
+    dynamicCommandBuffer = std::move( dynamicUniqueCommandBuffers.front() );
+
+    vk::Buffer       buffer       = device->createBuffer( {} );
+    vk::UniqueBuffer uniqueBuffer = vk::UniqueBuffer( buffer, *device );
+
+    vk::DeviceMemory       deviceMemory       = device->allocateMemory( {} );
+    vk::UniqueDeviceMemory uniqueDeviceMemory = vk::UniqueDeviceMemory( deviceMemory, *device );
+
+    vk::ResultValue<std::vector<vk::UniquePipeline>> pipelines = device->createGraphicsPipelinesUnique( nullptr, {} );
+  }
+  catch ( vk::SystemError const & err )
+  {
+    std::cout << "vk::SystemError: " << err.what() << std::endl;
+    std::exit( -1 );
+  }
+  catch ( ... )
+  {
+    std::cout << "unknown error\n";
+    std::exit( -1 );
+  }
+
+  return 0;
+}

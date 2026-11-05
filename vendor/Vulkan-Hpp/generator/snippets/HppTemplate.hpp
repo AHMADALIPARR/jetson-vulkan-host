@@ -1,0 +1,127 @@
+// SPDX-FileCopyrightText: 2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+${copyrightMessage}
+#ifndef VULKAN_HPP
+#  define VULKAN_HPP
+
+${includes}
+
+VULKAN_HPP_STATIC_ASSERT( VK_HEADER_VERSION == ${headerVersion}, "Wrong VK_HEADER_VERSION!" );
+
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
+{
+  namespace detail
+  {
+    class DispatchLoaderDynamic;
+
+#  if !defined( VULKAN_HPP_DEFAULT_DISPATCHER_HANDLED ) && VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
+    extern VULKAN_HPP_STORAGE_API DispatchLoaderDynamic defaultDispatchLoaderDynamic;
+#  endif
+  }  // namespace detail
+}  // namespace VULKAN_HPP_NAMESPACE
+
+${defines}
+
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
+{
+  ${ArrayWrapper1D}
+  ${ArrayWrapper2D}
+#if !defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
+  ${ArrayProxy}
+  ${ArrayProxyNoTemporaries}
+  ${StridedArrayProxy}
+  ${Optional}
+  ${StructureChain}
+  ${UniqueHandle}
+#endif  // VULKAN_HPP_DISABLE_ENHANCED_MODE
+
+  namespace detail
+  {
+    ${IsDispatchedList}
+    ${DispatchLoaderBase}
+    ${DispatchLoaderStatic}
+  }
+  ${Exchange}
+
+  struct AllocationCallbacks;
+
+#if !defined( VULKAN_HPP_NO_SMART_HANDLE )
+
+  namespace detail
+  {
+    ${ObjectDestroy}
+    ${ObjectFree}
+    ${ObjectRelease}
+    ${PoolFree}
+  }
+#endif // !VULKAN_HPP_NO_SMART_HANDLE
+
+  ${baseTypes}
+
+  template <typename Type, Type value = Type{}>
+  struct CppType
+  {};
+} // namespace VULKAN_HPP_NAMESPACE
+
+#include <vulkan/${api}_enums.hpp>
+#if !defined( VULKAN_HPP_NO_TO_STRING )
+#include <vulkan/${api}_to_string.hpp>
+#endif
+
+#ifndef VULKAN_HPP_NO_EXCEPTIONS
+VULKAN_HPP_EXPORT namespace std
+{
+  template <>
+  struct is_error_code_enum<VULKAN_HPP_NAMESPACE::Result> : public true_type
+  {};
+}  // namespace std
+#endif
+
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
+{
+#ifndef VULKAN_HPP_NO_EXCEPTIONS
+${Exceptions}
+${resultExceptions}
+${throwResultException}
+#endif
+
+${ResultValue}
+${resultChecks}
+${constexprDefines}
+${structForwardDeclarations}
+${handleForwardDeclarations}
+${funcPointers}
+
+#if 20 <= VULKAN_HPP_CPP_VERSION
+  template <typename Allocator, typename T>
+  concept IsAllocator = requires( Allocator allocator, std::size_t n ) {
+                          { *allocator.allocate( n ) } -> std::same_as<typename Allocator::value_type &>;
+                          { allocator.deallocate( allocator.allocate( n ), n ) };
+                        } && std::copy_constructible<Allocator> && std::equality_comparable<Allocator> && std::same_as<typename Allocator ::value_type, T>;
+#endif
+ } // namespace VULKAN_HPP_NAMESPACE
+
+// clang-format off
+#include <vulkan/${api}_handles.hpp>
+#include <vulkan/${api}_structs.hpp>
+#include <vulkan/${api}_funcs.hpp>
+// clang-format on
+
+
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
+{
+#if !defined( VULKAN_HPP_DISABLE_ENHANCED_MODE )
+  ${structExtendsStructs}
+#endif // VULKAN_HPP_DISABLE_ENHANCED_MODE
+
+  namespace detail
+  {
+    ${DynamicLoader}
+    ${DispatchLoaderDynamic}
+#   if defined( VULKAN_HPP_CXX_MODULE ) && !defined( VULKAN_HPP_DEFAULT_DISPATCHER_HANDLED ) && VULKAN_HPP_DISPATCH_LOADER_DYNAMIC == 1
+      VULKAN_HPP_STORAGE_API DispatchLoaderDynamic defaultDispatchLoaderDynamic;
+#   endif
+  }
+}   // namespace VULKAN_HPP_NAMESPACE
+#endif

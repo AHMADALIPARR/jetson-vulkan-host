@@ -1,0 +1,123 @@
+// SPDX-FileCopyrightText: 2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+template <typename T>
+class ArrayProxyNoTemporaries
+{
+public:
+  VULKAN_HPP_CONSTEXPR ArrayProxyNoTemporaries() VULKAN_HPP_NOEXCEPT
+    : m_count( 0 )
+    , m_ptr( nullptr )
+  {
+  }
+
+  VULKAN_HPP_CONSTEXPR ArrayProxyNoTemporaries( std::nullptr_t ) VULKAN_HPP_NOEXCEPT
+    : m_count( 0 )
+    , m_ptr( nullptr )
+  {
+  }
+
+#if VULKAN_HPP_CPP_VERSION < 20
+  template <typename S, typename std::enable_if<std::is_convertible<S, T>::value && std::is_lvalue_reference<S>::value, int>::type = 0>
+#else
+  template <typename S>
+  requires std::is_convertible<S, T>::value && std::is_lvalue_reference<S>::value
+#endif
+  ArrayProxyNoTemporaries( S && value ) VULKAN_HPP_NOEXCEPT
+    : m_count( 1 )
+    , m_ptr( &value )
+  {
+  }
+
+  ArrayProxyNoTemporaries( uint32_t count, T * ptr ) VULKAN_HPP_NOEXCEPT
+    : m_count( count )
+    , m_ptr( ptr )
+  {
+  }
+
+  template <std::size_t C>
+  ArrayProxyNoTemporaries( T ( &ptr )[C] ) VULKAN_HPP_NOEXCEPT
+    : m_count( C )
+    , m_ptr( ptr )
+  {
+  }
+
+  template <std::size_t C>
+  ArrayProxyNoTemporaries( T ( &&ptr )[C] ) = delete;
+
+  // Any l-value reference with a .data() return type implicitly convertible to T*, and a .size() return type implicitly convertible to size_t.
+#if VULKAN_HPP_CPP_VERSION < 20
+  template <typename V,
+            typename std::enable_if<!std::is_convertible<decltype( std::declval<V>().begin() ), T *>::value &&
+                                      std::is_convertible<decltype( std::declval<V>().data() ), T *>::value &&
+                                      std::is_convertible<decltype( std::declval<V>().size() ), std::size_t>::value && std::is_lvalue_reference<V>::value,
+                                    int>::type = 0>
+#else
+  template <typename V>
+  requires( !std::is_convertible<decltype( std::declval<V>().begin() ), T *>::value && std::is_convertible<decltype( std::declval<V>().data() ), T *>::value &&
+            std::is_convertible<decltype( std::declval<V>().size() ), std::size_t>::value && std::is_lvalue_reference<V>::value )
+#endif
+  ArrayProxyNoTemporaries( V && v ) VULKAN_HPP_NOEXCEPT
+    : m_count( static_cast<uint32_t>( v.size() ) )
+    , m_ptr( v.data() )
+  {
+  }
+
+  // Any l-value reference with a .begin() return type implicitly convertible to T*, and a .size() return type implicitly convertible to size_t.
+#if VULKAN_HPP_CPP_VERSION < 20
+  template <typename V,
+            typename std::enable_if<std::is_convertible<decltype( std::declval<V>().begin() ), T *>::value &&
+                                      std::is_convertible<decltype( std::declval<V>().size() ), std::size_t>::value && std::is_lvalue_reference<V>::value,
+                                    int>::type = 0>
+#else
+  template <typename V>
+  requires std::is_convertible<decltype( std::declval<V>().begin() ), T *>::value &&
+             std::is_convertible<decltype( std::declval<V>().size() ), std::size_t>::value && std::is_lvalue_reference<V>::value
+#endif
+  ArrayProxyNoTemporaries( V && v ) VULKAN_HPP_NOEXCEPT
+    : m_count( static_cast<uint32_t>( v.size() ) )
+    , m_ptr( v.begin() )
+  {
+  }
+
+  T const * begin() const VULKAN_HPP_NOEXCEPT
+  {
+    return m_ptr;
+  }
+
+  T const * end() const VULKAN_HPP_NOEXCEPT
+  {
+    return m_ptr + m_count;
+  }
+
+  T const & front() const VULKAN_HPP_NOEXCEPT
+  {
+    VULKAN_HPP_ASSERT( m_count && m_ptr );
+    return *m_ptr;
+  }
+
+  T const & back() const VULKAN_HPP_NOEXCEPT
+  {
+    VULKAN_HPP_ASSERT( m_count && m_ptr );
+    return *( m_ptr + m_count - 1 );
+  }
+
+  bool empty() const VULKAN_HPP_NOEXCEPT
+  {
+    return ( m_count == 0 );
+  }
+
+  uint32_t size() const VULKAN_HPP_NOEXCEPT
+  {
+    return m_count;
+  }
+
+  T * data() const VULKAN_HPP_NOEXCEPT
+  {
+    return m_ptr;
+  }
+
+private:
+  uint32_t m_count;
+  T *      m_ptr;
+};

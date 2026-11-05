@@ -1,0 +1,83 @@
+// SPDX-FileCopyrightText: 2018-2026 NVIDIA CORPORATION
+// SPDX-License-Identifier: Apache-2.0
+
+// VulkanHpp Tests : NoExceptionsRAII
+//                   Compile test with VULKAN_HPP_NO_EXCEPTIONS set and using raii-classes
+//                   Note: this is _no_ functional test!! Don't ever code this way!!
+
+#include "../test_macros.hpp"
+#ifdef VULKAN_HPP_USE_CXX_MODULE
+#  include <cstdint>
+import vulkan;
+#else
+#  include "vulkan/vulkan_raii.hpp"
+
+#  include <algorithm>
+#  include <cstdint>
+#  include <vector>
+#endif
+
+static char const * AppName    = "NoExceptions";
+static char const * EngineName = "Vulkan.hpp";
+
+int main()
+{
+#if defined( VULKAN_HPP_NO_EXCEPTIONS )
+  vk::raii::Context context;
+
+  vk::ApplicationInfo appInfo( AppName, 1, EngineName, 1, vk::ApiVersion11 );
+  auto                instance = context.createInstance( { {}, &appInfo } );
+  release_assert( instance.has_value() );
+
+  auto physicalDevices = instance->enumeratePhysicalDevices();
+  release_assert( physicalDevices.has_value() );
+  auto physicalDevice = physicalDevices->front();
+
+  // get the QueueFamilyProperties of the first PhysicalDevice
+  std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+
+  // get the first index into queueFamiliyProperties which supports graphics
+  std::size_t graphicsQueueFamilyIndex =
+    std::distance( queueFamilyProperties.begin(),
+                   std::find_if( queueFamilyProperties.begin(),
+                                 queueFamilyProperties.end(),
+                                 []( vk::QueueFamilyProperties const & qfp ) { return qfp.queueFlags & vk::QueueFlagBits::eGraphics; } ) );
+  release_assert( graphicsQueueFamilyIndex < queueFamilyProperties.size() );
+
+  // create a Device
+  float                     queuePriority = 0.0f;
+  vk::DeviceQueueCreateInfo deviceQueueCreateInfo( vk::DeviceQueueCreateFlags(), static_cast<uint32_t>( graphicsQueueFamilyIndex ), 1, &queuePriority );
+  auto                      device = physicalDevice.createDevice( vk::DeviceCreateInfo( vk::DeviceCreateFlags(), deviceQueueCreateInfo ) );
+  release_assert( device.has_value() );
+
+  // create a CommandPool to allocate a CommandBuffer from
+  auto commandPool = device->createCommandPool( vk::CommandPoolCreateInfo( vk::CommandPoolCreateFlags(), deviceQueueCreateInfo.queueFamilyIndex ) );
+  release_assert( commandPool.has_value() );
+
+  {
+    // allocate a CommandBuffer from the CommandPool
+    auto commandBuffers = device->allocateCommandBuffers( vk::CommandBufferAllocateInfo( *commandPool, vk::CommandBufferLevel::ePrimary, 1 ) );
+    release_assert( commandBuffers.has_value() );
+
+    auto commandBuffer = std::move( commandBuffers.value[0] );
+  }
+
+  {
+    // allocate 10 CommandBuffers from the CommandPool and move them into a std::vector<vk::raii::CommandBuffer>
+    auto rv = device->allocateCommandBuffers( vk::CommandBufferAllocateInfo( *commandPool, vk::CommandBufferLevel::ePrimary, 10 ) );
+    release_assert( rv.has_value() );
+    std::vector<vk::raii::CommandBuffer> commandBuffers;
+    commandBuffers = std::move( rv.value );
+  }
+
+  {
+    // allocate 10 CommandBuffers from the CommandPool and move them into a vk::raii::CommandBuffers
+    auto rv = device->allocateCommandBuffers( vk::CommandBufferAllocateInfo( *commandPool, vk::CommandBufferLevel::ePrimary, 10 ) );
+    release_assert( rv.has_value() );
+    vk::raii::CommandBuffers commandBuffers = nullptr;
+    commandBuffers                          = std::move( rv.value );
+  }
+#endif
+
+  return 0;
+}

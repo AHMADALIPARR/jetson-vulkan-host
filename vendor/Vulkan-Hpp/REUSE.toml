@@ -1,0 +1,13 @@
+version = 1
+
+# ---- Repo infrastructure and documentation ----
+
+[[annotations]]
+path = [
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "VulkanHpp.natvis",
+    "generator/.clang-format_*",
+]
+SPDX-FileCopyrightText = "2026 NVIDIA Corporation"
+SPDX-License-Identifier = "Apache-2.0"
