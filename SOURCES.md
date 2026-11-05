@@ -16,6 +16,16 @@ the owner's layer, not these trees.
 | SPIRV-Tools | github.com/KhronosGroup/SPIRV-Tools | `b570f00a782a7bf4006964e8284dd8c10c4c549b` | 34 MB |
 | glslang | github.com/KhronosGroup/glslang | `9e78d9ffe78a8bc7fa1d3326f2da91d19eba3479` | 60 MB |
 | Vulkan-ValidationLayers | github.com/KhronosGroup/Vulkan-ValidationLayers | `615ed222e657ff79d07acb3db69776a09d1842e5` | 69 MB |
+| Silk.NET | github.com/dotnet/Silk.NET | `fd0c2871dd08019b9e6a166f13f7bfe44fb4f11a` | 1,011 MB |
+
+Silk.NET (.NET Foundation, MIT — upstream's license, in-tree) is the
+.NET binding set the owner called in (2026-11-04: "Yes C# and even
+F# can perform well"). The Vulkan binding lives at
+`vendor/Silk.NET/src/Vulkan/Silk.NET.Vulkan`. **F# needs no separate
+extraction**: F# consumes the same .NET assemblies and compiles to
+the same IL, so F# rides this tree — its seat is the host-side
+translator and ownership logic. The tree is vendored whole (all of
+Silk.NET's API bindings), per the owner's extraction rule.
 
 ## Build wiring notes (from the trees themselves)
 

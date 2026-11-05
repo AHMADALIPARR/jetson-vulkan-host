@@ -1,0 +1,57 @@
+name: SPIRV-Cross
+on:
+  push:
+    branches-ignore:
+      - "ci/**"
+      - "develop/**"
+      - "main"
+    paths:
+      - build/submodules/SPIRV-Cross
+      - build/nuke/Native/Core.cs
+      - build/nuke/Native/SPIRVCross.cs
+      - .github/workflows/spirv-cross.yml
+
+permissions:
+  contents: read
+
+jobs:
+  Build:
+    if: github.repository == 'dotnet/Silk.NET'
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - os: ubuntu-latest
+            name: Linux
+            nuke_invoke: ./build.sh
+    name: ${{ matrix.env.name }} Build
+    runs-on: ${{ matrix.env.os }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PUSHABLE_GITHUB_TOKEN }}
+      - name: Checkout submodules, configure git
+        run: |
+          git submodule update --init --recursive --depth 0 build/submodules/SPIRV-Cross
+          git config --local user.email "9011267+dotnet-bot@users.noreply.github.com"
+          git config --local user.name "The Silk.NET Automaton"
+      - name: Extra prerequisites
+        run: |
+          echo running extras
+          ${{ matrix.env.extras }}
+      - name: Install Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: |
+            6.0.201
+            7.0.*
+            8.0.*
+      - name: Build SPIRV-Cross
+        run: ${{ matrix.env.nuke_invoke }} SPIRVCross
+        env:
+          PUSHABLE_GITHUB_TOKEN: ${{ secrets.PUSHABLE_GITHUB_TOKEN }}
+

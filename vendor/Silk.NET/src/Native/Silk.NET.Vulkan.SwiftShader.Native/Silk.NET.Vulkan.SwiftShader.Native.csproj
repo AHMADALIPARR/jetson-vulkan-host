@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <SilkGitDirForVersion>$(MSBuildThisFileDirectory)..\..\..\build\submodules\SwiftShader</SilkGitDirForVersion>
+  </PropertyGroup>
+
+  <Import Project="..\..\..\build\props\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net4.6.1</TargetFrameworks>
+    <Authors>.NET Foundation and Contributors</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dotnet/Silk.NET</PackageProjectUrl>
+    <Description>Multi-platform native library for SwiftShader.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/google/swiftshader</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

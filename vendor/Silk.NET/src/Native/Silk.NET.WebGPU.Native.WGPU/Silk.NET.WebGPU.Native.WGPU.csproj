@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\props\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net4.6.1</TargetFrameworks>
+    <PackageId>Silk.NET.WebGPU.Native.WGPU</PackageId>
+    <Authors>.NET Foundation and Contributors</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dotnet/Silk.NET</PackageProjectUrl>
+    <Description>Multi-platform native library for WGPU.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/gfx-rs/wgpu-native</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

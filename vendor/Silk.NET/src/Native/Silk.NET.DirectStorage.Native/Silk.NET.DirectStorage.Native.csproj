@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\props\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net4.6.1</TargetFrameworks>
+    <Authors>.NET Foundation and Contributors</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression></PackageLicenseExpression>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageVersion>$([System.IO.File]::ReadAllText("$(MSBuildThisFileDirectory)version.txt"))</PackageVersion>
+    <PackageProjectUrl>https://github.com/dotnet/Silk.NET</PackageProjectUrl>
+    <Description>Contains DirectStorage binaries for use with .NET applications.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/microsoft/DirectStorage</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="LICENSE.txt" PackagePath="" />
+  </ItemGroup>
+
+</Project>

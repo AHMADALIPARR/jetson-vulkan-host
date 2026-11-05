@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.1;net5.0</TargetFrameworks>
+      <RootNamespace>Silk.NET.GLFW</RootNamespace>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\..\Native\Silk.NET.GLFW.Native\Silk.NET.GLFW.Native.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\..\..\build\props\bindings.props" />
+</Project>

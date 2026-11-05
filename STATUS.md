@@ -13,9 +13,12 @@
   code: the host daemon, buffer manager, SPIR-V gate, queue seam,
   and render half do not exist yet. The Pascal-to-SPIR-V lowering
   is the owner's end of Stage 6 and lives with his Pascal work.
-- Bindings decision stands as C++/Vulkan-Hpp (vendored); the
-  owner's C# remark is recorded in the Miami blueprint — Silk.NET
-  is not vendored; if he calls C# back in, it gets extracted then.
+- Bindings: both paths are now vendored. C++/Vulkan-Hpp stands;
+  the owner called C# in (2026-11-04) and Silk.NET was extracted
+  the same night (see SOURCES.md) — the .NET host path (C#, and F#
+  on the same bindings) is fully sourced. Which language the host
+  daemon is written in is still the owner's call at build time;
+  both are buildable from this repo.
 
 ## Repository state
 

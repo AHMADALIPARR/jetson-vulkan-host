@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\props\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net4.6.1</TargetFrameworks>
+    <PackageVersion>1.23.1</PackageVersion>
+    <Authors>.NET Foundation and Contributors</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>LGPL-2.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dotnet/Silk.NET</PackageProjectUrl>
+    <Description>Multi-platform native library for OpenAL Soft.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/kcat/openal-soft</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

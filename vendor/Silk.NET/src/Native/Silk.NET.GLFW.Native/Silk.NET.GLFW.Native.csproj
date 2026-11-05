@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\props\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net4.6.1</TargetFrameworks>
+    <PackageId>Ultz.Native.GLFW</PackageId> <!-- TODO change this in 3.0 -->
+    <PackageVersion>3.4.0</PackageVersion>
+    <Authors>.NET Foundation and Contributors</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dotnet/Silk.NET</PackageProjectUrl>
+    <Description>Multi-platform native library for GLFW.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/glfw/glfw</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>
