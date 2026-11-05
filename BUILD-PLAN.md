@@ -31,8 +31,11 @@ box, not vendored here.
    ordered command stream): buffer create/copy, pipeline bind,
    dispatch, present; a BEAM-side translator turns the drained
    stream into host-daemon commands, deterministically.
-7. **Render half** — offscreen target with readback/capture first;
-   swapchain/display last, if at all.
+7. **Render half** — Vulkan renders offscreen into a shared buffer;
+   presentation is PureBasic's (the owner's ruling: PureBasic
+   provides the graphics — his existing stack, the Voxel800 line).
+   This repo builds no swapchain or display code; its render job
+   ends at a completed frame in memory with a recorded handoff.
 8. **Sync hardening** — fences/timeline semaphores wired to the
    ownership table; no implicit waits.
 
