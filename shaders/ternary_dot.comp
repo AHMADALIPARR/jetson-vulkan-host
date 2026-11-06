@@ -1,0 +1,31 @@
+#version 450
+// Ternary dot-product kernel — Stage 6 first workload (BUILD-PLAN piece 5).
+//
+// Semantics mirror the owner's Pascal reference kernel: plain integer
+// accumulation of activation * weight, where every weight is in
+// {-1, 0, +1}. Integer math only: the GPU result must equal the CPU
+// reference exactly, with no tolerance (BUILD-PLAN gate).
+//
+// Buffers:
+//   a: activations, layout [outputs][n] int32
+//   w: ternary weights, length n int32, values in {-1, 0, +1}
+//   o: outputs, one int32 per invocation
+// Push constant: n = dot length.
+
+layout(local_size_x = 64) in;
+
+layout(set = 0, binding = 0) readonly buffer Activations { int a[]; };
+layout(set = 0, binding = 1) readonly buffer Weights     { int w[]; };
+layout(set = 0, binding = 2) writeonly buffer Outputs    { int o[]; };
+
+layout(push_constant) uniform Push { uint n; } pc;
+
+void main() {
+    uint gid = gl_GlobalInvocationID.x;
+    int acc = 0;
+    uint base = gid * pc.n;
+    for (uint i = 0; i < pc.n; ++i) {
+        acc += a[base + i] * w[i];
+    }
+    o[gid] = acc;
+}

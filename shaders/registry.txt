@@ -1,0 +1,3 @@
+b01f56481549d9bd24945cbddc1feab672710f5bc1db3343754f92fc0a5630ef  ternary_dot.comp.spv
+cc1abead8cd4fc21dc0f2d98d03ca6dbf8c6db51ddcba3ef122200026c7a4bb0  fullscreen.vert.spv
+fda08729a5c578501a4459eff1043832513b26216f4987630d54137a6e67cb02  gradient.frag.spv
